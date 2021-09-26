@@ -30,7 +30,6 @@ public class Scan {
         br = new BufferedReader(fileReader);
 
         pw = new PrintWriter("output.txt");
-
         fsm = new int[15][11]; // build the fsm table
         Scanner input = new Scanner (new File("FSM.txt"));
         for (int row = 0; row < 15; row++)
@@ -44,14 +43,32 @@ public class Scan {
     }
 
     public int getCharClass(char ch) { // gives proper column in fsm
-        if (ch >= 'A'&& ch <='Z' || ch >= 'a'&& ch <='z' )
-        return 0; if(ch>='0'&& ch<='9')
-        return 1;
-        else return 2; 
+        if (ch >= 'A'&& ch <='Z' || ch >= 'a'&& ch <='z') //letter
+            return 0;
+        else if(ch>='0'&& ch<='9') // digit
+            return 1;
+        else if(ch == '\'') //quote (escape sequence for single quote)
+            return 2;
+        else if(ch == ':') //colon
+            return 3;
+        else if(ch == '\n' || ch == '\r') //new line
+            return 4;
+        else if(ch == '>') //greater than
+            return 5;
+        else if(ch == '<') //less than
+            return 6;
+        else if(ch == '=') //equal to
+            return 7;
+        else if(ch == '(' || ch == ')' || ch == '+' || ch == '*' || ch == '/' || ch == '-' || ch == '%' || ch == '.' || ch == ',' || ch == ';') //other punctuation
+            return 8;
+        else if(ch == ' ') //white space
+            return 9;
+        else
+            return 10; //other
     }
 
     //Returns the next Token in inputted program
-    public String nextToken() throws Exception {
+    public Token nextToken() throws Exception {
         removeSpaces();
         int state = 0;
         int inchar= getCharClass(ch);
@@ -63,34 +80,98 @@ public class Scan {
             inchar= getCharClass(ch);
         }
         System.out.print(buf+ "\t");
-        String t = finalState(state, buf);
+        Token t = finalState(state, buf);
+        System.out.print(t.tokenType);
+        System.out.println();
         return t; 
     }
     
-    //Returns the type of Token based on the final state in FSM
-    String finalState(int state, String buf) throws Exception {
-        String t= "";
+    //Returns a Token based on the final state in FSM
+    public Token finalState(int state, String buf) throws Exception {
+        Token t= new Token();
         if (state == 1) {
-            t= "ID";
+            t.tokenType=T.IDENTIFIER;
         }
         else if(state == 2) {
-            t = "NUM";
+            t.tokenType=T.NUMBER;
+        }
+        else if(state == 4) {
+            t.tokenType=T.STRING;
+        }
+        else if(state == 5) {
+            t.tokenType=T.COLON;
+        }
+        else if(state == 6) {
+            t.tokenType=T.ASSIGN;
+        }
+        else if(state == 7) {
+            t.tokenType=T.GT;
+        }
+        else if(state == 8) {
+            t.tokenType=T.GE;
+        }
+        else if(state == 9) {
+            t.tokenType=T.LT;
+        }
+        else if(state == 10) {
+            t.tokenType=T.LE;
+        }
+        else if(state == 11) {
+            t.tokenType=T.NE;
+        }
+        else if(state == 12) {
+            if(buf.equals("=")){
+                t.tokenType=T.EQUAL;
+            }
+            else if(buf.equals("+")){
+                t.tokenType=T.PLUS;
+            }
+            else if(buf.equals("-")){
+                t.tokenType=T.MINUS;
+            }
+            else if(buf.equals("*")){
+                t.tokenType=T.TIMES;
+            }
+            else if(buf.equals("/")){
+                t.tokenType=T.DIV;
+            }
+            else if(buf.equals("%")){
+                t.tokenType=T.MOD;
+            }
+            else if(buf.equals("(")){
+                t.tokenType=T.LPAREN;
+            }
+            else if(buf.equals(")")){
+                t.tokenType=T.RPAREN;
+            }
+            else if(buf.equals(".")){
+                t.tokenType=T.PERIOD;
+            }
+            else if(buf.equals(",")){
+                t.tokenType=T.COMMA;
+            }
+            else if(buf.equals(";")){
+                t.tokenType=T.SEMI;
+            }
+        }
+        else if(state == 13 || state == 14) {
+            throw new Exception("Error! Sorry sir");
         }
         return t;
     }
 
     public static void main(String[] args) throws Exception {
         Scanner input = new Scanner(System.in);
-        System.out.print("Enter filename");
+        System.out.println("Enter filename");
         String filename = input.nextLine();
 
         Scan s = new Scan (filename);
 
-        Token t =new Token();
-        while(t.tokenType!= T.PERIOD) {
+        Token t = new Token();
+        while(t.tokenType != T.PERIOD) {
             t = s.nextToken(); // will have printed the token string already
-            System.out.println(t.tokenType ); // prints code number
         }   
         s.pw.close();
+        input.close();
     }
 }
