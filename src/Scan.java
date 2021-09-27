@@ -11,6 +11,8 @@ public class Scan {
     // table (array) of reserved words  
     private String[] reserved = {"program","var","integer", "bool","procedure","call", "begin", 
         "end","if","then", "else", "while", "do", "and","or", "not", "read", "write","writeln"};
+    private int[] reservedInts = {T.PROGRAM, T.VAR, T.INTEGER, T.BOOL, T.PROCEDURE, T.CALL, T.BEGIN,
+        T.END, T.IF, T.THEN, T.ELSE, T.WHILE, T.DO, T.AND, T.OR, T.NOT, T.READ, T.WRITE, T.WRITELN};
 
     File f; // input program
     FileReader fileReader; // needed for buffered reader
@@ -38,8 +40,21 @@ public class Scan {
     }
 
     public void removeSpaces()throws IOException {
-        while (ch ==' ' || ch == '\n' || ch == '\r')
+        while (ch ==' ' || ch == '\n' || ch == '\r'){
+            if(ch=='\n'){
+                line++;
+            }
             ch = (char)br.read();
+        }
+    }
+
+    public int checkReserved(String buf){
+        for(int i=0; i<reserved.length; i++){
+            if(buf.equals(reserved[i])){
+                return reservedInts[i];
+            }
+        }
+        return T.IDENTIFIER;
     }
 
     public int getCharClass(char ch) { // gives proper column in fsm
@@ -90,7 +105,7 @@ public class Scan {
     public Token finalState(int state, String buf) throws Exception {
         Token t= new Token();
         if (state == 1) {
-            t.tokenType=T.IDENTIFIER;
+            t.tokenType=checkReserved(buf);
         }
         else if(state == 2) {
             t.tokenType=T.NUMBER;
@@ -155,7 +170,7 @@ public class Scan {
             }
         }
         else if(state == 13 || state == 14) {
-            throw new Exception("Error! Sorry sir");
+            throw new Exception("Error! Illegal Character Line "+line);
         }
         return t;
     }
@@ -166,12 +181,10 @@ public class Scan {
         String filename = input.nextLine();
 
         Scan s = new Scan (filename);
-
         Token t = new Token();
         while(t.tokenType != T.PERIOD) {
             t = s.nextToken(); // will have printed the token string already
         }   
-        s.pw.close();
         input.close();
     }
 }
