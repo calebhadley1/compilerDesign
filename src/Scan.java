@@ -47,10 +47,13 @@ public class Scan {
 
     public void removeSpaces()throws IOException {
         while (ch ==' ' || ch == '\n' || ch == '\r'){
-            if(ch=='\n'){
+            if(ch=='\n' || ch=='\r'){
                 line++;
                 pw.println();
                 pw.write(line+" ");
+            }
+            else if(ch==' '){
+                pw.write(" ");
             }
             ch = (char)br.read();
         }
@@ -107,7 +110,7 @@ public class Scan {
         System.out.print(t.tokenType);
         System.out.println();
 
-        pw.write(buf + " ");
+        pw.write(buf);
         if(t.tokenType == T.PERIOD){
             pw.close();
         }
