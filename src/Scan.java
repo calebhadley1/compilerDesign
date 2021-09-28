@@ -31,7 +31,13 @@ public class Scan {
         fileReader = new FileReader(f);
         br = new BufferedReader(fileReader);
 
-        pw = new PrintWriter("output.txt");
+        try {
+            pw = new PrintWriter(new File("output.txt"));
+            pw.write(line+" ");
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+         }
         fsm = new int[15][11]; // build the fsm table
         Scanner input = new Scanner (new File("FSM.txt"));
         for (int row = 0; row < 15; row++)
@@ -43,6 +49,8 @@ public class Scan {
         while (ch ==' ' || ch == '\n' || ch == '\r'){
             if(ch=='\n'){
                 line++;
+                pw.println();
+                pw.write(line+" ");
             }
             ch = (char)br.read();
         }
@@ -98,6 +106,11 @@ public class Scan {
         Token t = finalState(state, buf);
         System.out.print(t.tokenType);
         System.out.println();
+
+        pw.write(buf + " ");
+        if(t.tokenType == T.PERIOD){
+            pw.close();
+        }
         return t; 
     }
     
@@ -179,12 +192,11 @@ public class Scan {
         Scanner input = new Scanner(System.in);
         System.out.println("Enter filename");
         String filename = input.nextLine();
-
         Scan s = new Scan (filename);
         Token t = new Token();
         while(t.tokenType != T.PERIOD) {
             t = s.nextToken(); // will have printed the token string already
-        }   
+        }
         input.close();
     }
 }
