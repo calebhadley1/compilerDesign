@@ -25,6 +25,8 @@ public class Scan {
     int line = 1; // line numbers
     int state = 0; // start state
 
+    String error = "";
+
     //Constructor: Builds FSM and sets up file reading/writing
     public Scan(String filename) throws IOException {
         f  = new File (filename);
@@ -46,7 +48,7 @@ public class Scan {
     }
 
     public void removeSpaces()throws IOException {
-        while (ch ==' ' || ch == '\n' || ch == '\r'){
+        while (ch ==' ' || ch == '\n' || ch == '\r' || ch == '\t'){
             if(ch=='\n' || ch=='\r'){
                 line++;
                 pw.println();
@@ -55,10 +57,14 @@ public class Scan {
             else if(ch==' '){
                 pw.write(" ");
             }
+            else if(ch=='\t'){
+                pw.write("\t");
+            }
             ch = (char)br.read();
         }
     }
 
+    //Checks Identifier Token against Reserved Word array and returns appropriate int
     public int checkReserved(String buf){
         for(int i=0; i<reserved.length; i++){
             if(buf.equals(reserved[i])){
@@ -68,6 +74,7 @@ public class Scan {
         return T.IDENTIFIER;
     }
 
+    //Returns char class of first char in a Token, used for determining start state of FSM
     public int getCharClass(char ch) { // gives proper column in fsm
         if (ch >= 'A'&& ch <='Z' || ch >= 'a'&& ch <='z') //letter
             return 0;
@@ -112,6 +119,7 @@ public class Scan {
 
         pw.write(buf);
         if(t.tokenType == T.PERIOD){
+            writeError();
             pw.close();
         }
         return t; 
@@ -185,10 +193,26 @@ public class Scan {
                 t.tokenType=T.SEMI;
             }
         }
-        else if(state == 13 || state == 14) {
-            throw new Exception("Error! Illegal Character Line "+line);
+        else if(state == 13) {
+            setError("Error! Illegal Character Line ",line);
+        }
+        else if(state == 14) {
+            setError("Error! String not Terminated Line ",line);
         }
         return t;
+    }
+
+    public void setError(String s, int ln){
+        if(error==""){
+            error = s+ln;
+        }
+    }
+
+    public void writeError(){
+        if(error!=""){
+            pw.println();
+            pw.write(error);
+        }
     }
 
     public static void main(String[] args) throws Exception {
