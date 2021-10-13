@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class Scan {
     private int[][] fsm; // finite state machine table
 
-    // table (array) of reserved words  
+    // table (array) of reserved words
     private String[] reserved = {"program","var","integer", "bool","procedure","call", "begin", 
         "end","if","then", "else", "while", "do", "and","or", "not", "read", "write","writeln"};
     private int[] reservedInts = {T.PROGRAM, T.VAR, T.INTEGER, T.BOOL, T.PROCEDURE, T.CALL, T.BEGIN,
@@ -27,8 +27,11 @@ public class Scan {
 
     String error = "";
 
+    SymbolTable sym;
+
     //Constructor: Builds FSM and sets up file reading/writing
     public Scan(String filename) throws IOException {
+        sym = new SymbolTable();
         f  = new File (filename);
         fileReader = new FileReader(f);
         br = new BufferedReader(fileReader);
@@ -114,7 +117,11 @@ public class Scan {
         }
         System.out.print(buf+ "\t");
         Token t = finalState(state, buf);
-        System.out.print(t.tokenType);
+        System.out.print(t.tokenType + "\t");
+        int temp = sym.insert(buf, 0, t.tokenType);
+        if(temp!=-1){
+            System.out.print(temp);
+        }
         System.out.println();
 
         pw.write(buf);
@@ -216,10 +223,12 @@ public class Scan {
     }
 
     public static void main(String[] args) throws Exception {
+        //Testing Scanner and Symbol Table functionality
         Scanner input = new Scanner(System.in);
         System.out.println("Enter filename");
         String filename = input.nextLine();
         Scan s = new Scan (filename);
+        SymbolTable sym = new SymbolTable();
         Token t = new Token();
         while(t.tokenType != T.PERIOD) {
             t = s.nextToken(); // will have printed the token string already

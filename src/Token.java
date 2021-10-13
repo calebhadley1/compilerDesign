@@ -3,8 +3,8 @@ public class Token {
     public int value;  // address in symbol table or numerical value
 
     public Token() {
-        tokenType = 0;
-        value = 0;
+        tokenType = -1;
+        value = -1;
     }
     
     public Token(int tokenType, int value) {

@@ -10,6 +10,6 @@ program add;
       write('n: ');
       read(n);
      end;
-     write ('The sum is );
+     write ('The sum is ');
      writeln(sum);
    end.
