@@ -228,7 +228,6 @@ public class Scan {
         System.out.println("Enter filename");
         String filename = input.nextLine();
         Scan s = new Scan (filename);
-        SymbolTable sym = new SymbolTable();
         Token t = new Token();
         while(t.tokenType != T.PERIOD) {
             t = s.nextToken(); // will have printed the token string already

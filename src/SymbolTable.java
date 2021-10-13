@@ -69,6 +69,9 @@ public class SymbolTable{
                 symbolIndex++;
             }
         }
+        else if(tokenType==36){
+            return Integer.parseInt(name);
+        }
         return curr;
     }
 }
