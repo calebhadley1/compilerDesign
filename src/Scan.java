@@ -27,11 +27,13 @@ public class Scan {
 
     String error = "";
 
-    SymbolTable sym;
+    SymbolTable symT;
+    StringTable strT;
 
     //Constructor: Builds FSM and sets up file reading/writing
-    public Scan(String filename) throws IOException {
-        sym = new SymbolTable();
+    public Scan(String filename, SymbolTable symT, StringTable strT) throws IOException {
+        this.symT = symT;
+        this.strT = strT;
         f  = new File (filename);
         fileReader = new FileReader(f);
         br = new BufferedReader(fileReader);
@@ -115,14 +117,21 @@ public class Scan {
             ch = (char)br.read();
             inchar= getCharClass(ch);
         }
-        System.out.print(buf+ "\t");
+        //System.out.print(buf+ "\t");
         Token t = finalState(state, buf);
-        System.out.print(t.tokenType + "\t");
-        int temp = sym.insert(buf, 0, t.tokenType);
-        if(temp!=-1){
-            System.out.print(temp);
+        //System.out.print(t.tokenType + "\t");
+
+        if(t.tokenType==35){
+            symT.insert(buf, 0, t.tokenType);
         }
-        System.out.println();
+        else if(t.tokenType==37){
+            strT.insert(buf, 0, t.tokenType);
+        }
+
+        //if(temp!=-1){
+        //    System.out.print(temp);
+        //}
+        //System.out.println();
 
         pw.write(buf);
         if(t.tokenType == T.PERIOD){
@@ -211,8 +220,10 @@ public class Scan {
 
     public void setError(String s, int ln){
         if(error==""){
-            error = s+ln;
+            error = s+" at line "+ln;
         }
+        writeError();
+        pw.close();
     }
 
     public void writeError(){
@@ -222,16 +233,18 @@ public class Scan {
         }
     }
 
+    /*
     public static void main(String[] args) throws Exception {
         //Testing Scanner and Symbol Table functionality
         Scanner input = new Scanner(System.in);
         System.out.println("Enter filename");
         String filename = input.nextLine();
-        Scan s = new Scan (filename);
+        Scan s = new Scan (filename, new SymbolTable(), new StringTable());
         Token t = new Token();
         while(t.tokenType != T.PERIOD) {
             t = s.nextToken(); // will have printed the token string already
         }
         input.close();
     }
+    */
 }

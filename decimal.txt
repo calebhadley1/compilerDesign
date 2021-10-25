@@ -14,13 +14,12 @@ program ConvertToDecimal;
               decimal := decimal + digit*power;
               power := power * 2; 
           end; 
-         write('Decimal is );
+         write('Decimal is ');
          write(decimal);
    end;
    
     begin
         write('Enter a  binary number ');
-        read(num)
+        read(num);
          call binaryToDecimal(num);
-        
     end.
