@@ -6,7 +6,10 @@ program Hanoi;
     if n >0 then
     begin
         call move(n-1, start, extra, goal);
-        write(start); write( ' --> ' ); write(goal); writeln(' ');
+        write(start);
+        write( ' --> ' ); !this is a comment
+        write(goal);
+        writeln(' ');
        call move(n-1, extra, goal, start);
       end;
    end;

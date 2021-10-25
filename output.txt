@@ -1,25 +1,22 @@
-1  program ConvertToDecimal;
-2   var num:integer;
-3   procedure binaryToDecimal( num : integer);
-4   var decimal, power, temp, digit: integer;
-5      
-6      begin
-7        decimal:= 0; 
-8        power:= 1; 
-9         temp := num; 
-10         while (temp > 0) do
-11          begin
-12               digit := temp % 10; 
-13               temp := temp / 10; 
-14               decimal := decimal + digit*power;
-15               power := power * 2; 
-16           end; 
-17          write('Decimal is ');
-18          write(decimal);
-19    end;
-20    
-21     begin
-22         write('Enter a  binary number ');
-23         read(num);
-24          call binaryToDecimal(num);
-25     end.
+1  program Hanoi;
+2   var n, start, goal, extra:integer;
+3   procedure move( n, start, goal, extra : integer);
+4   var w:integer;
+5   begin
+6     if n >0 then
+7     begin
+8         call move(n-1, start, extra, goal);
+9         write(start);
+10         write( ' --> ' ); !this is a comment        write(goal);
+11         writeln(' ');
+12        call move(n-1, extra, goal, start);
+13       end;
+14    end;
+15    
+16   begin
+17      start := 1;
+18      goal:= 3;
+19       extra:= 2;
+20   n := 3;
+21       call move(n, start, goal, extra);
+22  end.

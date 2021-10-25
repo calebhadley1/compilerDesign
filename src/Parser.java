@@ -51,21 +51,19 @@ public class Parser{
     public void variableDeclarations()throws Exception{
         System.out.println("Variable Declarations");
 
-        if(tok.tokenType==T.VAR)
+        if(tok.tokenType==T.VAR){
             tok = scanner.nextToken();
-        else
-            scanner.setError("Expecting Var", scanner.line);
-
-        variableDeclaration();
-
-        if(tok.tokenType==T.SEMI)
-            tok = scanner.nextToken();
-        else
-            scanner.setError("Expecting semi", scanner.line);
-
-        //if token is id then we have more variableDecs otherwise E
-        while(tok.tokenType==T.IDENTIFIER){
             variableDeclaration();
+
+            if(tok.tokenType==T.SEMI)
+                tok = scanner.nextToken();
+            else
+                scanner.setError("Expecting semi", scanner.line);
+    
+            //if token is id then we have more variableDecs otherwise E
+            while(tok.tokenType==T.IDENTIFIER){
+                variableDeclaration();
+            }
         }
     }
     
@@ -213,7 +211,6 @@ public class Parser{
             scanner.setError("Expecting Begin", scanner.line);
         
         statementList();
-        System.out.println(tok.tokenType);
         if(tok.tokenType==T.END)
             tok = scanner.nextToken();
         else
@@ -311,7 +308,7 @@ public class Parser{
     public void factor()throws Exception{
         System.out.println("Factor");
         //id | num | true | false | (expression) | not factor
-=        if(tok.tokenType==T.IDENTIFIER)
+        if(tok.tokenType==T.IDENTIFIER)
             tok = scanner.nextToken();
         else if(tok.tokenType==T.NUMBER)
             tok = scanner.nextToken();
@@ -493,11 +490,6 @@ public class Parser{
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting RParen", scanner.line);
-
-        if(tok.tokenType==T.SEMI)
-            tok = scanner.nextToken();
-        else
-            scanner.setError("Expecting Semicolon", scanner.line);
 
     }
 

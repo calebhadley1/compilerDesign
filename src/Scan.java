@@ -53,7 +53,7 @@ public class Scan {
     }
 
     public void removeSpaces()throws IOException {
-        while (ch ==' ' || ch == '\n' || ch == '\r' || ch == '\t'){
+        while (ch ==' ' || ch == '\n' || ch == '\r' || ch == '\t' || ch == '!'){
             if(ch=='\n' || ch=='\r'){
                 line++;
                 pw.println();
@@ -64,6 +64,13 @@ public class Scan {
             }
             else if(ch=='\t'){
                 pw.write("\t");
+            }
+            else if(ch=='!'){
+                while(ch!='\n' && ch!='\r'){
+                    pw.write(ch);
+                    ch = (char)br.read();
+                    System.out.println(ch);
+                }
             }
             ch = (char)br.read();
         }
@@ -210,10 +217,10 @@ public class Scan {
             }
         }
         else if(state == 13) {
-            setError("Error! Illegal Character Line ",line);
+            setError("Error! Illegal Character",line);
         }
         else if(state == 14) {
-            setError("Error! String not Terminated Line ",line);
+            setError("Error! String not Terminated",line);
         }
         return t;
     }
