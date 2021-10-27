@@ -26,10 +26,10 @@ public class Parser{
         else
             scanner.setError("Expecting program",scanner.line);
         
-        if(tok.tokenType!=T.IDENTIFIER)
-            scanner.setError("Expecting program name", scanner.line);
-        else
+        if(tok.tokenType==T.IDENTIFIER)
             tok=scanner.nextToken(); //scope here??
+        else
+            scanner.setError("Expecting program name", scanner.line);
         
         if(tok.tokenType==T.SEMI)
             tok = scanner.nextToken();
@@ -46,6 +46,8 @@ public class Parser{
             System.out.println("Success");
         else
             scanner.setError("Expecting Period", scanner.line);
+        
+        scanner.pw.close(); //Successful parse, close the printwriter.
     }
 
     public void variableDeclarations()throws Exception{
@@ -60,7 +62,6 @@ public class Parser{
             else
                 scanner.setError("Expecting semi", scanner.line);
     
-            //if token is id then we have more variableDecs otherwise E
             while(tok.tokenType==T.IDENTIFIER){
                 variableDeclaration();
             }
@@ -88,7 +89,6 @@ public class Parser{
         else
             scanner.setError("Expecting ID", scanner.line);
 
-        //more ids
         while(tok.tokenType==T.COMMA){
             tok = scanner.nextToken();
             if(tok.tokenType==T.IDENTIFIER)
@@ -112,7 +112,7 @@ public class Parser{
         System.out.println("Subprogram Declarations");
 
         //subprogram_declaration ; subprogram_declarations | ε
-        while(tok.tokenType==T.PROCEDURE){
+        if(tok.tokenType==T.PROCEDURE){
             subprogramDeclaration();
 
             if(tok.tokenType==T.SEMI)
@@ -211,6 +211,7 @@ public class Parser{
             scanner.setError("Expecting Begin", scanner.line);
         
         statementList();
+
         if(tok.tokenType==T.END)
             tok = scanner.nextToken();
         else

@@ -69,8 +69,10 @@ public class Scan {
                 while(ch!='\n' && ch!='\r'){
                     pw.write(ch);
                     ch = (char)br.read();
-                    System.out.println(ch);
                 }
+                line++;
+                pw.println();
+                pw.write(line+" ");
             }
             ch = (char)br.read();
         }
@@ -124,9 +126,8 @@ public class Scan {
             ch = (char)br.read();
             inchar= getCharClass(ch);
         }
-        //System.out.print(buf+ "\t");
+
         Token t = finalState(state, buf);
-        //System.out.print(t.tokenType + "\t");
 
         if(t.tokenType==35){
             symT.insert(buf, 0, t.tokenType);
@@ -135,16 +136,7 @@ public class Scan {
             strT.insert(buf, 0, t.tokenType);
         }
 
-        //if(temp!=-1){
-        //    System.out.print(temp);
-        //}
-        //System.out.println();
-
         pw.write(buf);
-        if(t.tokenType == T.PERIOD){
-            writeError();
-            pw.close();
-        }
         return t; 
     }
     
@@ -228,9 +220,11 @@ public class Scan {
     public void setError(String s, int ln){
         if(error==""){
             error = s+" at line "+ln;
+            //writeError();
+            pw.println();
+            pw.write(error);
+            pw.close();
         }
-        writeError();
-        pw.close();
     }
 
     public void writeError(){
@@ -238,6 +232,7 @@ public class Scan {
             pw.println();
             pw.write(error);
         }
+        pw.close();
     }
 
     /*
