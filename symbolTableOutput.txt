@@ -1,0 +1,11 @@
+Symbol Table:
+Index: 0 Symbol: Hanoi 0
+Index: 1 Symbol: n 0
+Index: 2 Symbol: start 0
+Index: 3 Symbol: goal 0
+Index: 4 Symbol: extra 0
+Index: 5 Symbol: move 0
+Index: 6 Symbol: w 0
+String Table:
+Index: 0 String: ' --> ' 0
+Index: 1 String: ' ' 0

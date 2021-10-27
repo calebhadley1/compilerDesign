@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.Scanner;
 
 
@@ -9,14 +11,32 @@ public class Parser{
     String filename;
     Token tok;
 
+    PrintWriter pw; // for symboltable_output.txt
+
     public Parser(String filename)throws Exception{
         symT = new SymbolTable();
         strT = new StringTable();
         scanner = new Scan(filename, symT, strT);
+        pw = new PrintWriter(new File("symbolTableOutput.txt"));    
     }
 
     public void writeSymbolTable()throws Exception{
-        //print symbol table to a file for debugging
+        pw.write("Symbol Table:");
+        int i=0;
+        while(symT.symbols[i]!=null){
+            pw.println();
+            pw.write("Index: " + i + " Symbol: " + symT.symbols[i].name + " " + symT.symbols[i].scope);
+            i++;
+        }
+        pw.println();
+        pw.write("String Table:");
+        i=0;
+        while(strT.strings[i]!=null){
+            pw.println();
+            pw.write("Index: " + i + " String: " + strT.strings[i].name + " " + strT.strings[i].scope);
+            i++;
+        }
+        pw.close();
     }
 
     public void parse()throws Exception{
@@ -501,9 +521,7 @@ public class Parser{
         Parser p = new Parser(filen);
         p.tok = p.scanner.nextToken(); //p.scope??
         p.parse();
+        p.writeSymbolTable();
         input.close();
-
-        //write sym table for debugging
-
     }
 }
