@@ -62,8 +62,12 @@ public class Parser{
 
         compoundStatement();
 
-        if(tok.tokenType==T.PERIOD)
-            System.out.println("Success");
+        if(tok.tokenType==T.PERIOD){
+            if(scanner.error=="")//no errors during parse
+                System.out.println("Success");
+            else
+                System.out.println("Unsuccessful Parse/Scan");
+        }
         else
             scanner.setError("Expecting Period", scanner.line);
         
