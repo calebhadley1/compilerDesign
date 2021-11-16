@@ -28,12 +28,10 @@ public class Scan {
     String error = "";
 
     SymbolTable symT;
-    StringTable strT;
 
     //Constructor: Builds FSM and sets up file reading/writing
-    public Scan(String filename, SymbolTable symT, StringTable strT) throws IOException {
+    public Scan(String filename, SymbolTable symT) throws IOException {
         this.symT = symT;
-        this.strT = strT;
         f  = new File (filename);
         fileReader = new FileReader(f);
         br = new BufferedReader(fileReader);
@@ -133,7 +131,7 @@ public class Scan {
             symT.insert(buf, 0, t.tokenType);
         }
         else if(t.tokenType==37){
-            strT.insert(buf, 0, t.tokenType);
+            symT.insert(buf, 0, t.tokenType);
         }
 
         pw.write(buf);
@@ -234,19 +232,4 @@ public class Scan {
         }
         pw.close();
     }
-
-    /*
-    public static void main(String[] args) throws Exception {
-        //Testing Scanner and Symbol Table functionality
-        Scanner input = new Scanner(System.in);
-        System.out.println("Enter filename");
-        String filename = input.nextLine();
-        Scan s = new Scan (filename, new SymbolTable(), new StringTable());
-        Token t = new Token();
-        while(t.tokenType != T.PERIOD) {
-            t = s.nextToken(); // will have printed the token string already
-        }
-        input.close();
-    }
-    */
 }

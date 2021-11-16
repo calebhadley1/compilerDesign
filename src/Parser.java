@@ -6,7 +6,6 @@ import java.util.Scanner;
 public class Parser{
     Scan scanner;
     SymbolTable symT;
-    StringTable strT;
 
     String filename;
     Token tok;
@@ -15,8 +14,7 @@ public class Parser{
 
     public Parser(String filename)throws Exception{
         symT = new SymbolTable();
-        strT = new StringTable();
-        scanner = new Scan(filename, symT, strT);
+        scanner = new Scan(filename, symT);
         pw = new PrintWriter(new File("symbolTableOutput.txt"));    
     }
 
@@ -30,10 +28,10 @@ public class Parser{
         }
         pw.println();
         pw.write("String Table:");
-        i=0;
-        while(strT.strings[i]!=null){
+        i=1000;
+        while(symT.symbols[i]!=null){
             pw.println();
-            pw.write("Index: " + i + " String: " + strT.strings[i].name + " " + strT.strings[i].scope);
+            pw.write("Index: " + i + " String: " + symT.symbols[i].name + " " + symT.symbols[i].scope);
             i++;
         }
         pw.close();
