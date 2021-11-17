@@ -20,10 +20,12 @@ public class Parser{
 
     public void writeSymbolTable()throws Exception{
         pw.write("Symbol Table:");
+        pw.println("");
+        pw.write("Index\t" + "Name\t" + "Scope\t"+ "tokenType\t"+ "Declared\t" + "NumArgs\t" + "Kind\t" + "Start\t");
         int i=0;
         while(symT.symbols[i]!=null){
             pw.println();
-            pw.write("Index: " + i + " Symbol: " + symT.symbols[i].name + " " + symT.symbols[i].scope);
+            pw.write(i + "\t\t" + symT.symbols[i].name + "\t" + symT.symbols[i].scope + "\t\t" + symT.symbols[i].tokenType + "\t\t\t" + symT.symbols[i].declared + "\t\t" + symT.symbols[i].numArgs + "\t\t" + symT.symbols[i].kind + "\t\t" + symT.symbols[i].start);
             i++;
         }
         pw.println();
@@ -39,8 +41,11 @@ public class Parser{
 
     public void parse()throws Exception{
         System.out.println("Program"); //for debugging and tracing
-        if(tok.tokenType==T.PROGRAM)
+        if(tok.tokenType==T.PROGRAM){
             tok = scanner.nextToken();
+            symT.symbols[symT.symbolIndex-1].tokenType=T.PROGRAM;
+            symT.symbols[symT.symbolIndex-1].kind=T.PROGRAM;
+        }
         else
             scanner.setError("Expecting program",scanner.line);
         
@@ -58,6 +63,7 @@ public class Parser{
         
         subprogramDeclarations();
 
+        scanner.procedureNum=0; //Reset scope since we are entering main block
         compoundStatement();
 
         if(tok.tokenType==T.PERIOD){
@@ -76,56 +82,85 @@ public class Parser{
         System.out.println("Variable Declarations");
 
         if(tok.tokenType==T.VAR){
+            int temp = symT.symbolIndex;
+            System.out.println("Erorr testsing ahahahahahah");
+            System.out.println("temp" + temp);
             tok = scanner.nextToken();
-            variableDeclaration();
+            Semantics s = new Semantics();
+            variableDeclaration(s);
+            System.out.println("count" + s.count);
+            System.out.println("start" + s.start);
+            
+            for(int j=0; j<s.count; j++){
+                symT.symbols[s.start+j].tokenType=s.type;
+                symT.symbols[s.start+j].kind=T.LOCAL;
+            }
 
             if(tok.tokenType==T.SEMI)
                 tok = scanner.nextToken();
             else
                 scanner.setError("Expecting semi", scanner.line);
     
+            temp = symT.symbolIndex;
             while(tok.tokenType==T.IDENTIFIER){
-                variableDeclaration();
+                variableDeclaration(s);
+                for(int j=0; j<s.count; j++){
+                    symT.symbols[temp+j].tokenType=s.type;
+                    symT.symbols[temp+j].kind=T.LOCAL;
+                }
+                
+                if(tok.tokenType==T.SEMI)
+                    tok = scanner.nextToken();
+                else
+                    scanner.setError("Expecting semi", scanner.line);
+
             }
         }
     }
     
-    public void variableDeclaration()throws Exception{
+    public void variableDeclaration(Semantics s)throws Exception{
         System.out.println("Variable Declaration");
 
-        identifierList();
+        identifierList(s);
 
         if(tok.tokenType==T.COLON)
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting colon", scanner.line);
 
-        type();
+        type(s);
     }
 
-    public void identifierList()throws Exception{
+    public void identifierList(Semantics s)throws Exception{
         System.out.println("Identifier List");
-        
-        if(tok.tokenType==T.IDENTIFIER)
+
+        s.count=0;
+        if(tok.tokenType==T.IDENTIFIER){
+            s.start=symT.symbolIndex-1;
+            s.count++;
             tok = scanner.nextToken();
+        }
         else
             scanner.setError("Expecting ID", scanner.line);
 
         while(tok.tokenType==T.COMMA){
             tok = scanner.nextToken();
-            if(tok.tokenType==T.IDENTIFIER)
+            if(tok.tokenType==T.IDENTIFIER){
+                s.count++;
                 tok = scanner.nextToken();
+            }
             else
                 scanner.setError("Expecting ID", scanner.line);
         }
-        
     }
 
-    public void type()throws Exception{
+    public void type(Semantics s)throws Exception{
         System.out.println("Type");
 
-        if(tok.tokenType==T.INTEGER)
+        if(tok.tokenType==T.INTEGER){
             tok = scanner.nextToken();
+            s.type=T.INTEGER;
+        }
         else
             scanner.setError("Expecting integer", scanner.line);
     }
@@ -149,6 +184,8 @@ public class Parser{
     public void subprogramDeclaration()throws Exception{
         System.out.println("Subprogram Declaration");
 
+        scanner.procedureNum++;
+
         //subprogram_head variableDeclarations compound_statement
         subprogramHead();
 
@@ -161,8 +198,15 @@ public class Parser{
         System.out.println("Subprogram Head");
 
         //procedure id arguments ;
-        if(tok.tokenType==T.PROCEDURE)
+        int temp = symT.symbolIndex;
+
+        if(tok.tokenType==T.PROCEDURE){
             tok = scanner.nextToken();
+            symT.symbols[symT.symbolIndex-1].scope=0;
+            symT.symbols[symT.symbolIndex-1].tokenType=T.PROCEDURE;
+            symT.symbols[symT.symbolIndex-1].kind=T.PROCEDURE;
+            symT.symbols[symT.symbolIndex-1].start=symT.symbolIndex-1;            
+        }
         else
             scanner.setError("Expecting Procedure", scanner.line);
 
@@ -171,7 +215,15 @@ public class Parser{
         else
             scanner.setError("Expecting ID", scanner.line);
         
-        arguments();
+        Semantics s = new Semantics();
+        arguments(s);
+        s.start--; //Compensating for the LParen in Arguments as opposed to no paren in VarDecs
+        symT.symbols[temp].numArgs=s.count;
+
+        for(int j=1; j<=s.count; j++){
+            symT.symbols[temp+j].tokenType=s.type;
+            symT.symbols[temp+j].kind=T.PARM;
+       }
 
         if(tok.tokenType==T.SEMI)
             tok = scanner.nextToken();
@@ -179,16 +231,17 @@ public class Parser{
             scanner.setError("Expecting Semi-Colon", scanner.line);
     }
 
-    public void arguments()throws Exception{
+    public void arguments(Semantics s)throws Exception{
         System.out.println("Arguments");
 
         //( parameter_list)
-        if(tok.tokenType==T.LPAREN)
+        if(tok.tokenType==T.LPAREN){
             tok = scanner.nextToken();
+        }
         else
             scanner.setError("Expecting Left Paren", scanner.line);
 
-        parameterList();
+        parameterList(s);
 
         if(tok.tokenType==T.RPAREN)
             tok = scanner.nextToken();
@@ -196,29 +249,29 @@ public class Parser{
             scanner.setError("Expecting Right Paren", scanner.line);
     }
 
-    public void parameterList()throws Exception{
+    public void parameterList(Semantics s)throws Exception{
         System.out.println("Parameter List");
 
         //identifier_list : type { ; identifier_list : type}
-        identifierList();
-
+        identifierList(s);
+        
         if(tok.tokenType==T.COLON)
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting Colon", scanner.line);
 
-        type();
-
+        type(s);
+        
         while(tok.tokenType==T.SEMI){
             tok = scanner.nextToken();
-            identifierList();
+            identifierList(s);
 
             if(tok.tokenType==T.COLON)
                 tok=scanner.nextToken();
             else
                 scanner.setError("Expecting Colon", scanner.line);
             
-            type();
+            type(s);
         }
 
     }
@@ -287,59 +340,62 @@ public class Parser{
         else
             scanner.setError("Expecting AssignOp", scanner.line);
         
-        expression();
+        Semantics s = new Semantics();
+        expression(s);
     }
 
-    public void expression()throws Exception{
+    public void expression(Semantics s)throws Exception{
         System.out.println("Expression");
 
         //simple_expression [ relop simple_expression]
-        simpleExpression();
+        simpleExpression(s);
         if(tok.tokenType==T.EQUAL || tok.tokenType==T.LT || tok.tokenType==T.LE || tok.tokenType==T.GT || tok.tokenType==T.NE || tok.tokenType==T.MOD || tok.tokenType==T.DIV || tok.tokenType==T.TIMES || tok.tokenType==T.PLUS || tok.tokenType==T.MINUS){
             tok = scanner.nextToken();
-            simpleExpression();
+            simpleExpression(s);
         }
     }
 
-    public void simpleExpression()throws Exception{
+    public void simpleExpression(Semantics s)throws Exception{
         System.out.println("Simple Expression");
 
         //[-]term {addop term}
         if(tok.tokenType==T.MINUS)
             tok = scanner.nextToken();
 
-        term();
+        term(s);
 
         while(tok.tokenType==T.PLUS){
             tok = scanner.nextToken();
-            term();
+            term(s);
         }
     }
 
-    public void term()throws Exception{
+    public void term(Semantics s)throws Exception{
         System.out.println("Term");
 
         //factor {mulop factor }
-        factor();
+        factor(s);
 
         while(tok.tokenType==T.TIMES){
             tok = scanner.nextToken();
-            factor();
+            factor(s);
         }
     }
 
-    public void factor()throws Exception{
+    public void factor(Semantics s)throws Exception{
         System.out.println("Factor");
         //id | num | true | false | (expression) | not factor
-        if(tok.tokenType==T.IDENTIFIER)
+        if(tok.tokenType==T.IDENTIFIER){
+            s.count++;
             tok = scanner.nextToken();
+        }
         else if(tok.tokenType==T.NUMBER)
             tok = scanner.nextToken();
         else if(tok.tokenType==T.BOOL)
             tok = scanner.nextToken();
         else if(tok.tokenType==T.LPAREN){
             tok = scanner.nextToken();
-            expression();
+            expression(s);
             if(tok.tokenType==T.RPAREN)
                 tok = scanner.nextToken();
             else
@@ -347,7 +403,7 @@ public class Parser{
         }
         else if(tok.tokenType==T.NOT){
             tok = scanner.nextToken();
-            factor();
+            factor(s);
         }
         else
             scanner.setError("Expecting ID or Num or Bool or (Expression) or Not Factor", scanner.line);
@@ -370,8 +426,19 @@ public class Parser{
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting LParen", scanner.line);
-
-        expressionList();
+        
+        Semantics s = new Semantics();
+        s.start=symT.symbolIndex-1;
+        s.type=T.INTEGER;
+        expressionList(s);
+        System.out.println("FLAG");
+        System.out.println(s.start);
+        System.out.println(s.type);
+        System.out.println(s.count);
+        for(int j=s.start; j<=s.count; j++){
+             symT.symbols[j].tokenType=s.type;
+             symT.symbols[j].kind=T.PARM;
+        }
 
         if(tok.tokenType==T.RPAREN)
             tok = scanner.nextToken();
@@ -379,14 +446,14 @@ public class Parser{
             scanner.setError("Expecting RParen", scanner.line);
     }
 
-    public void expressionList()throws Exception{
+    public void expressionList(Semantics s)throws Exception{
         System.out.println("Expression List");
 
         //expression { , expression }
-        expression();
+        expression(s);
         while(tok.tokenType==T.COMMA){
             tok = scanner.nextToken();
-            expression();
+            expression(s);
         }
     }
 
@@ -399,7 +466,8 @@ public class Parser{
         else
             scanner.setError("Expecting IF", scanner.line);
 
-        expression();
+        Semantics s = new Semantics();
+        expression(s);
 
         if(tok.tokenType==T.THEN)
             tok = scanner.nextToken();
@@ -423,7 +491,8 @@ public class Parser{
         else
             scanner.setError("Expecting While", scanner.line);
         
-        expression();
+        Semantics s = new Semantics();
+        expression(s);
 
         if(tok.tokenType==T.DO)
             tok = scanner.nextToken();
@@ -447,19 +516,13 @@ public class Parser{
         else
             scanner.setError("Expecting LParen", scanner.line);
 
-        inputList();
+        Semantics s = new Semantics();
+        identifierList(s);
 
         if(tok.tokenType==T.RPAREN)
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting RParen", scanner.line);
-    }
-
-    public void inputList()throws Exception{
-        System.out.println("Input List");
-        //id {,id}
-        //same as identifier list??
-        identifierList();
     }
 
     public void writeStatement()throws Exception{
@@ -489,8 +552,10 @@ public class Parser{
         //string | expression
         if(tok.tokenType==T.STRING)
             tok = scanner.nextToken();
-        else
-            expression();
+        else{
+            Semantics s = new Semantics();
+            expression(s);
+        }
     }
     
     public void writelnStatement()throws Exception{

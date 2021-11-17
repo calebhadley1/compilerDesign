@@ -1,11 +1,16 @@
 Symbol Table:
-Index: 0 Symbol: Hanoi 0
-Index: 1 Symbol: n 0
-Index: 2 Symbol: start 0
-Index: 3 Symbol: goal 0
-Index: 4 Symbol: extra 0
-Index: 5 Symbol: move 0
-Index: 6 Symbol: w 0
+Index	Name	Scope	tokenType	Declared	NumArgs	Kind	Start	
+0		Hanoi	0		0			true		0		0		0
+1		n	0		2			true		0		41		0
+2		start	0		2			true		0		41		0
+3		goal	0		2			true		0		41		0
+4		extra	0		2			true		0		41		0
+5		move	0		4			true		4		4		5
+6		n	1		2			true		0		43		0
+7		start	1		2			true		0		43		0
+8		goal	1		2			true		0		43		0
+9		extra	1		2			true		0		43		0
+10		w	1		2			true		0		41		0
 String Table:
-Index: 0 String: ' --> ' 0
-Index: 1 String: ' ' 0
+Index: 1000 String: ' --> ' 1
+Index: 1001 String: ' ' 1

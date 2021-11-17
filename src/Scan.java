@@ -29,6 +29,8 @@ public class Scan {
 
     SymbolTable symT;
 
+    int procedureNum=0;
+
     //Constructor: Builds FSM and sets up file reading/writing
     public Scan(String filename, SymbolTable symT) throws IOException {
         this.symT = symT;
@@ -126,12 +128,12 @@ public class Scan {
         }
 
         Token t = finalState(state, buf);
-
-        if(t.tokenType==35){
-            symT.insert(buf, 0, t.tokenType);
+        
+        if(t.tokenType==T.IDENTIFIER){
+            symT.insert(buf, procedureNum, T.IDENTIFIER, true, 0, 0, 0); //Default ID entry in symbol table -> modified by Semantics/Parser classes
         }
-        else if(t.tokenType==37){
-            symT.insert(buf, 0, t.tokenType);
+        else if(t.tokenType==T.STRING){
+            symT.insert(buf, procedureNum, t.tokenType, true, 0, 0, 0);
         }
 
         pw.write(buf);

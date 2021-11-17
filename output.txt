@@ -7,16 +7,17 @@
 7     begin
 8         call move(n-1, start, extra, goal);
 9         write(start);
-10         write( ' --> ' ); !this is a comment        write(goal);
-11         writeln(' ');
-12        call move(n-1, extra, goal, start);
-13       end;
-14    end;
-15    
-16   begin
-17      start := 1;
-18      goal:= 3;
-19       extra:= 2;
-20   n := 3;
-21       call move(n, start, goal, extra);
-22  end.
+10         write( ' --> ' ); !this is a comment
+11         write(goal);
+12         writeln(' ');
+13        call move(n-1, extra, goal, start);
+14       end;
+15    end;
+16    
+17   begin
+18      start := 1;
+19      goal:= 3;
+20       extra:= 2;
+21   n := 3;
+22       call move(n, start, goal, extra);
+23  end.
