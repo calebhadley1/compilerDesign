@@ -205,7 +205,8 @@ public class Parser{
             symT.symbols[symT.symbolIndex-1].scope=0;
             symT.symbols[symT.symbolIndex-1].tokenType=T.PROCEDURE;
             symT.symbols[symT.symbolIndex-1].kind=T.PROCEDURE;
-            symT.symbols[symT.symbolIndex-1].start=symT.symbolIndex-1;            
+            symT.symbols[symT.symbolIndex-1].start=symT.symbolIndex-1;
+            quads.insertQuad("PROCDEC", "-", "-", symT.symbolIndex-1+"");
         }
         else
             scanner.setError("Expecting Procedure", scanner.line);
@@ -223,6 +224,7 @@ public class Parser{
         for(int j=1; j<=s.count; j++){
             symT.symbols[temp+j].tokenType=s.type;
             symT.symbols[temp+j].kind=T.PARM;
+            quads.insertQuad("PARAM", "-", "-", temp+j+"");
         }
 
         if(tok.tokenType==T.SEMI)

@@ -1,7 +1,13 @@
-Symbol Table:
+Quads Table:
 OP	ARG1	ARG2	RESULT
+DCL	-	-	1
+DCL	-	-	2
 DCL	-	-	3
 DCL	-	-	4
-DCL	-	-	5
-DCL	-	-	6
+PROCDEC	-	-	5
+PARAM	-	-	6
+PARAM	-	-	7
+PARAM	-	-	8
+PARAM	-	-	9
+DCL	-	-	10
 End	-	-	-

@@ -35,7 +35,7 @@ public class Quads{
     }
 
     public void writeQuadsTable()throws Exception{
-        pw.write("Symbol Table:");
+        pw.write("Quads Table:");
         pw.println("");
         pw.write("OP\t" + "ARG1\t" + "ARG2\t"+ "RESULT");
         int i=0;
