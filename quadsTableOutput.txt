@@ -1,0 +1,7 @@
+Symbol Table:
+OP	ARG1	ARG2	RESULT
+DCL	-	-	3
+DCL	-	-	4
+DCL	-	-	5
+DCL	-	-	6
+End	-	-	-

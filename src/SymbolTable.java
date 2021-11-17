@@ -23,11 +23,13 @@ public class SymbolTable{
 
     int symbolIndex;
     int stringIndex;
+    int tempNum;
     SymbolTableObject[] symbols;
 
     public SymbolTable(){
         symbolIndex=0;
         stringIndex=1000;
+        tempNum=1;
         symbols = new SymbolTableObject[2000];
     }
 
@@ -78,5 +80,13 @@ public class SymbolTable{
             }
         }
         return curr;
+    }
+
+    public int getTemp(){
+        String temp = "@t" + tempNum;
+        int place = symbolIndex;
+        insert(temp, 0, 0, true, 0, 0, 0);
+        tempNum++;
+        return place;
     }
 }

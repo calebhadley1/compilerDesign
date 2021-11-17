@@ -6,6 +6,7 @@ import java.util.Scanner;
 public class Parser{
     Scan scanner;
     SymbolTable symT;
+    Quads quads;
 
     String filename;
     Token tok;
@@ -15,6 +16,7 @@ public class Parser{
     public Parser(String filename)throws Exception{
         symT = new SymbolTable();
         scanner = new Scan(filename, symT);
+        quads = new Quads();
         pw = new PrintWriter(new File("symbolTableOutput.txt"));    
     }
 
@@ -67,6 +69,7 @@ public class Parser{
         compoundStatement();
 
         if(tok.tokenType==T.PERIOD){
+            quads.insertQuad("End","-","-","-");
             if(scanner.error=="")//no errors during parse
                 System.out.println("Success");
             else
@@ -83,15 +86,12 @@ public class Parser{
 
         if(tok.tokenType==T.VAR){
             int temp = symT.symbolIndex;
-            System.out.println("Erorr testsing ahahahahahah");
-            System.out.println("temp" + temp);
             tok = scanner.nextToken();
             Semantics s = new Semantics();
             variableDeclaration(s);
-            System.out.println("count" + s.count);
-            System.out.println("start" + s.start);
             
             for(int j=0; j<s.count; j++){
+                quads.insertQuad("DCL", "-", "-", s.start+j+"");
                 symT.symbols[s.start+j].tokenType=s.type;
                 symT.symbols[s.start+j].kind=T.LOCAL;
             }
@@ -223,7 +223,7 @@ public class Parser{
         for(int j=1; j<=s.count; j++){
             symT.symbols[temp+j].tokenType=s.type;
             symT.symbols[temp+j].kind=T.PARM;
-       }
+        }
 
         if(tok.tokenType==T.SEMI)
             tok = scanner.nextToken();
@@ -589,6 +589,7 @@ public class Parser{
         p.tok = p.scanner.nextToken(); //p.scope??
         p.parse();
         p.writeSymbolTable();
+        p.quads.writeQuadsTable();
         input.close();
     }
 }
