@@ -13,11 +13,14 @@ public class Parser{
 
     PrintWriter pw; // for symboltable_output.txt
 
+    HelperMethods hm;
+
     public Parser(String filename)throws Exception{
         symT = new SymbolTable();
         scanner = new Scan(filename, symT);
         quads = new Quads();
-        pw = new PrintWriter(new File("symbolTableOutput.txt"));    
+        pw = new PrintWriter(new File("symbolTableOutput.txt"));  
+        hm = new HelperMethods();  
     }
 
     public void writeSymbolTable()throws Exception{
@@ -62,10 +65,16 @@ public class Parser{
             scanner.setError("Expecting semi", scanner.line);
 
         variableDeclarations();
+
+        int loc1 = quads.getQuad();
+        quads.insertQuad("BR", "-", "-", 0+"");
         
         subprogramDeclarations();
 
         scanner.procedureNum=0; //Reset scope since we are entering main block
+        int loc2 = quads.getQuad();
+        quads.setResult(loc1, loc2+"");
+
         compoundStatement();
 
         if(tok.tokenType==T.PERIOD){
@@ -331,9 +340,13 @@ public class Parser{
     public void assignmentStatement()throws Exception{
         System.out.println("Assignment Statement");
         //id assignop expression
-
-        if(tok.tokenType==T.IDENTIFIER)
+        int place = tok.value;
+        if(tok.tokenType==T.IDENTIFIER){
+            if(symT.symbols[place].declared==false){ //error not declared
+                scanner.setError("Error: ID " + place + " is not declared", scanner.line);
+            }
             tok = scanner.nextToken();
+        }
         else
             scanner.setError("Expecting ID", scanner.line);
         
@@ -341,63 +354,178 @@ public class Parser{
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting AssignOp", scanner.line);
-        
         Semantics s = new Semantics();
-        expression(s);
+        Exp x = new Exp();
+        expression(s, x);
+        System.out.println(place);
+        //not working due to Integer Number comparison
+        //if(symT.symbols[place].tokenType!=x.type){
+        //     scanner.setError("Error: Type Mismatch! "+symT.symbols[place].tokenType + " " + x.type, scanner.line);
+        // }
+        //else{
+        if(x.number){
+            quads.insertQuad("ASSIGN","*"+x.value,"-",place+"");
+        }
+        else{
+            quads.insertQuad("ASSIGN",x.value+"","-",place+"");
+        }
+        //}
     }
 
-    public void expression(Semantics s)throws Exception{
+    public void expression(Semantics s, Exp x)throws Exception{
         System.out.println("Expression");
 
         //simple_expression [ relop simple_expression]
+        /*
         simpleExpression(s);
         if(tok.tokenType==T.EQUAL || tok.tokenType==T.LT || tok.tokenType==T.LE || tok.tokenType==T.GT || tok.tokenType==T.NE || tok.tokenType==T.MOD || tok.tokenType==T.DIV || tok.tokenType==T.TIMES || tok.tokenType==T.PLUS || tok.tokenType==T.MINUS){
             tok = scanner.nextToken();
             simpleExpression(s);
         }
+        */
+        simpleExpression(s, x);
+        if(tok.tokenType==T.EQUAL || tok.tokenType==T.LT || tok.tokenType==T.LE || tok.tokenType==T.GT || tok.tokenType==T.NE || tok.tokenType==T.MOD || tok.tokenType==T.DIV || tok.tokenType==T.TIMES || tok.tokenType==T.PLUS || tok.tokenType==T.MINUS){
+            //int opCode = tok.tokenType;
+            String opCode = hm.getFieldByValue(tok.tokenType);
+            tok = scanner.nextToken();
+            Exp w = new Exp();
+            simpleExpression(s, w); //w must come back integer or error
+            if(w.number || symT.symbols[w.value].tokenType==T.INTEGER){//W must be a NUM ex. *9 or if it's a ID the ID must be an integer
+                int t = symT.getTemp(); //address of temp
+                symT.symbols[t].tokenType=T.BOOL;
+                symT.symbols[t].kind=T.TEMP;
+                symT.symbols[t].scope=scanner.procedureNum;
+                //handling nums for x and w
+                String xVal=x.value+"";
+                String wVal=w.value+"";
+                if(x.number)
+                    xVal="*"+xVal;
+                if(w.number)
+                    wVal="*"+wVal;
+                quads.insertQuad(opCode, xVal, wVal, t+"");
+                x.type=T.BOOL;
+                x.value=t;
+                x.number=false;
+            }
+            else{
+                scanner.setError("Error: Expecting number in expression()", scanner.line);
+            }
+        }
     }
 
-    public void simpleExpression(Semantics s)throws Exception{
+    public void simpleExpression(Semantics s, Exp x)throws Exception{
         System.out.println("Simple Expression");
+        int type1;
+        int type2;
+        Exp y = new Exp();
+        Exp z = new Exp();
+        int t; //address of a temp
 
         //[-]term {addop term}
         if(tok.tokenType==T.MINUS)
             tok = scanner.nextToken();
 
-        term(s);
+        term(s, y);
 
         while(tok.tokenType==T.PLUS){
             tok = scanner.nextToken();
-            term(s);
+            term(s, z);
+
+            type1 = y.type;
+            type2 = z.type;
+            // if(type1!=type2){//error
+            //     scanner.setError("Error, type mismatch ("+type1+" and "+type2+" do not match)", scanner.line);
+            // }
+            t=symT.getTemp();
+            symT.symbols[t].tokenType=T.BOOL;
+            symT.symbols[t].kind=T.TEMP;
+            symT.symbols[t].scope=scanner.procedureNum;
+            String yVal=y.value+"";
+            String zVal=z.value+"";
+            if(y.number)
+                yVal="*"+yVal;
+            if(z.number)
+                zVal="*"+zVal;
+            //quads.insertQuad(opCode+"", yVal, zVal, t+"");
+            quads.insertQuad("ADD", yVal, zVal, t+"");
+            y.type=type1;
+            y.number=false;
+            y.value=t;
         }
+        x.type=y.type;
+        x.value=y.value;
+        x.number=y.number;
     }
 
-    public void term(Semantics s)throws Exception{
+    public void term(Semantics s, Exp x)throws Exception{
         System.out.println("Term");
+        int type1;
+        int type2;
+        Exp y = new Exp();
+        Exp z = new Exp();
+        int t; //address of a temp
 
         //factor {mulop factor }
-        factor(s);
+        factor(s, y);
 
         while(tok.tokenType==T.TIMES){
+            int opCode = tok.tokenType;
             tok = scanner.nextToken();
-            factor(s);
+            factor(s, z);
+            type1=y.type;
+            type2=z.type;
+            if(type1!=type2){ //type mismatch
+                scanner.setError("Error, type mismatch ("+type1+" and "+type2+" do not match)", scanner.line);
+            }
+            t=symT.getTemp();
+            symT.symbols[t].tokenType=T.BOOL;
+            symT.symbols[t].kind=T.TEMP;
+            symT.symbols[t].scope=scanner.procedureNum;
+            String yVal=y.value+"";
+            String zVal=z.value+"";
+            if(y.number)
+                yVal="*"+yVal;
+            if(z.number)
+                zVal="*"+zVal;
+            quads.insertQuad(opCode+"", yVal, zVal, t+"");
+            y.type=type1;
+            y.number=false;
+            y.value=t;
         }
+        x.type=y.type;
+        x.value=y.value;
+        x.number=y.number;
     }
 
-    public void factor(Semantics s)throws Exception{
+    public void factor(Semantics s, Exp x)throws Exception{
         System.out.println("Factor");
         //id | num | true | false | (expression) | not factor
         if(tok.tokenType==T.IDENTIFIER){
+            //check declared
+            if(symT.symbols[tok.value].declared==false){ //error not declared
+                scanner.setError("Error: ID " + tok.value + " is not declared", scanner.line);
+            }
+            x.type=symT.symbols[tok.value].tokenType;
+            x.value=tok.value;
+            x.number=false;
             s.count++;
             tok = scanner.nextToken();
         }
-        else if(tok.tokenType==T.NUMBER)
+        else if(tok.tokenType==T.NUMBER){
+            x.type=tok.tokenType;            
+            x.value=tok.value;
+            x.number=true;
             tok = scanner.nextToken();
-        else if(tok.tokenType==T.BOOL)
+        }
+        else if(tok.tokenType==T.BOOL){
+            x.type=tok.tokenType;
+            x.value=tok.value;
+            x.bool=true;
             tok = scanner.nextToken();
+        }
         else if(tok.tokenType==T.LPAREN){
             tok = scanner.nextToken();
-            expression(s);
+            expression(s, x);
             if(tok.tokenType==T.RPAREN)
                 tok = scanner.nextToken();
             else
@@ -405,7 +533,17 @@ public class Parser{
         }
         else if(tok.tokenType==T.NOT){
             tok = scanner.nextToken();
-            factor(s);
+            factor(s, x);
+            if(x.type==T.INTEGER)
+                scanner.setError("Error: Cannot apply boolean NOT to Integer "+x.value, scanner.line);
+            int t = symT.getTemp();
+            symT.symbols[t].kind=T.TEMP;
+            symT.symbols[t].scope=scanner.procedureNum;
+            symT.symbols[t].tokenType=T.BOOL;
+            quads.insertQuad("NEG", x+"", "-", t+"");
+            x.type=T.BOOL;
+            x.value=t;
+            x.number=false;
         }
         else
             scanner.setError("Expecting ID or Num or Bool or (Expression) or Not Factor", scanner.line);
@@ -433,10 +571,6 @@ public class Parser{
         s.start=symT.symbolIndex-1;
         s.type=T.INTEGER;
         expressionList(s);
-        System.out.println("FLAG");
-        System.out.println(s.start);
-        System.out.println(s.type);
-        System.out.println(s.count);
         for(int j=s.start; j<=s.count; j++){
              symT.symbols[j].tokenType=s.type;
              symT.symbols[j].kind=T.PARM;
@@ -452,25 +586,30 @@ public class Parser{
         System.out.println("Expression List");
 
         //expression { , expression }
-        expression(s);
+        Exp x = new Exp();
+        expression(s, x);
         while(tok.tokenType==T.COMMA){
             tok = scanner.nextToken();
-            expression(s);
+            expression(s, x);
         }
     }
 
     public void ifStatement()throws Exception{
         System.out.println("If Statement");
         //if expression then statement [else statement]
-
+        int loc1, loc2;
         if(tok.tokenType==T.IF)
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting IF", scanner.line);
 
         Semantics s = new Semantics();
-        expression(s);
-
+        Exp x = new Exp();
+        expression(s, x);
+        if(x.type!=T.BOOL)
+            scanner.setError("Error: Expecting Boolean expression in ifStatement()", scanner.line);
+        loc1=quads.getQuad();
+        quads.insertQuad("BR0", x.value+"", "-", 0+"");
         if(tok.tokenType==T.THEN)
             tok = scanner.nextToken();
         else
@@ -480,28 +619,44 @@ public class Parser{
 
         if(tok.tokenType==T.ELSE){
             tok = scanner.nextToken();
+            loc2=quads.getQuad();
+            quads.insertQuad("BR", "-", "-", 0+"");
+            quads.setResult(loc1, loc2+"");
             statement();
+            quads.setResult(loc2, quads.getQuad()+"");
         }
+        else
+            quads.setResult(loc1, quads.getQuad()+"");
     }
 
     public void whileStatement()throws Exception{
         System.out.println("While Statement");
         //while expression do statement
+        int loc1;
+        int loc2;
 
         if(tok.tokenType==T.WHILE)
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting While", scanner.line);
         
+        loc1 = quads.getQuad();
         Semantics s = new Semantics();
-        expression(s);
-
+        Exp x = new Exp();
+        expression(s, x);
+        if(x.type!=T.BOOL){
+            scanner.setError("Error: expecting boolean expression in whileStatement()", scanner.line);
+        }
+        loc2 = quads.getQuad();
+        quads.insertQuad("BR0", x.value+"", "-", 0+"");
         if(tok.tokenType==T.DO)
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting Do", scanner.line);
         
         statement();
+        quads.insertQuad("BR", "-", "-", loc1+"");
+        quads.setResult(loc2, quads.getQuad()+"");
     }
 
     public void readStatement()throws Exception{
@@ -540,8 +695,9 @@ public class Parser{
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting LParen", scanner.line);
-
-        outputItem();
+        Exp x = new Exp();
+        outputItem(x);
+        quads.insertQuad("WRITE", "-", "-", x.value+"");
         if(tok.tokenType==T.RPAREN)
             tok = scanner.nextToken();
         else
@@ -549,14 +705,19 @@ public class Parser{
         
     }
 
-    public void outputItem()throws Exception{
+    public void outputItem(Exp x)throws Exception{
         System.out.println("Output Item");
         //string | expression
-        if(tok.tokenType==T.STRING)
+        if(tok.tokenType==T.STRING){
+            x.bool=false;
+            x.number=false;
+            x.type=T.STRING;
+            x.value=tok.value;
             tok = scanner.nextToken();
+        }
         else{
             Semantics s = new Semantics();
-            expression(s);
+            expression(s, x);
         }
     }
     
@@ -573,9 +734,9 @@ public class Parser{
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting LParen", scanner.line);
-        
-        outputItem();
-
+        Exp x = new Exp();
+        outputItem(x);
+        quads.insertQuad("WRITELN", "-", "-", x.value+"");
         if(tok.tokenType==T.RPAREN)
             tok = scanner.nextToken();
         else

@@ -128,12 +128,17 @@ public class Scan {
         }
 
         Token t = finalState(state, buf);
+        //System.out.println(t.tokenType);
+        //System.out.println(t.value);
         
         if(t.tokenType==T.IDENTIFIER){
-            symT.insert(buf, procedureNum, T.IDENTIFIER, true, 0, 0, 0); //Default ID entry in symbol table -> modified by Semantics/Parser classes
+            t.value = symT.insert(buf, procedureNum, t.tokenType, true, 0, 0, 0); //Default ID entry in symbol table -> modified by Semantics/Parser classes
         }
         else if(t.tokenType==T.STRING){
-            symT.insert(buf, procedureNum, t.tokenType, true, 0, 0, 0);
+            t.value = symT.insert(buf, procedureNum, t.tokenType, true, 0, 0, 0);
+        }
+        else if(t.tokenType==T.NUMBER){
+            t.value = Integer.parseInt(buf);
         }
 
         pw.write(buf);
