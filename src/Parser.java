@@ -72,6 +72,8 @@ public class Parser{
         subprogramDeclarations();
 
         scanner.procedureNum=0; //Reset scope since we are entering main block
+
+        quads.insertQuad("EXIT", "-", "-", "-");
         int loc2 = quads.getQuad();
         quads.setResult(loc1, loc2+"");
 
@@ -469,7 +471,7 @@ public class Parser{
         factor(s, y);
 
         while(tok.tokenType==T.TIMES){
-            int opCode = tok.tokenType;
+            String opCode = hm.getFieldByValue(tok.tokenType);
             tok = scanner.nextToken();
             factor(s, z);
             type1=y.type;
@@ -552,13 +554,17 @@ public class Parser{
     public void procedureStatement()throws Exception{
         System.out.println("Procedure Statement");
         //call id (expression_list)
+        int place;
         if(tok.tokenType==T.CALL)
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting Call", scanner.line);
 
-        if(tok.tokenType==T.IDENTIFIER)
+        place = quads.getQuad();
+        if(tok.tokenType==T.IDENTIFIER){
+            quads.insertQuad("CALL", tok.value+"", 0+"", "-");
             tok = scanner.nextToken();
+        }
         else
             scanner.setError("Expecting ID", scanner.line);
 
@@ -575,6 +581,7 @@ public class Parser{
              symT.symbols[j].tokenType=s.type;
              symT.symbols[j].kind=T.PARM;
         }
+        quads.setArg2(place, s.count+"");
 
         if(tok.tokenType==T.RPAREN)
             tok = scanner.nextToken();
