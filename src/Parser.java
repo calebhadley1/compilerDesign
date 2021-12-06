@@ -15,12 +15,15 @@ public class Parser{
 
     HelperMethods hm;
 
+    boolean procedureFlag;
+
     public Parser(String filename)throws Exception{
         symT = new SymbolTable();
         scanner = new Scan(filename, symT);
         quads = new Quads();
         pw = new PrintWriter(new File("symbolTableOutput.txt"));  
         hm = new HelperMethods();  
+        procedureFlag=false;
     }
 
     public void writeSymbolTable()throws Exception{
@@ -73,7 +76,8 @@ public class Parser{
 
         scanner.procedureNum=0; //Reset scope since we are entering main block
 
-        quads.insertQuad("EXIT", "-", "-", "-");
+        if(procedureFlag)
+            quads.insertQuad("EXIT", "-", "-", "-");
         int loc2 = quads.getQuad();
         quads.setResult(loc1, loc2+"");
 
@@ -132,7 +136,7 @@ public class Parser{
     public void variableDeclaration(Semantics s)throws Exception{
         System.out.println("Variable Declaration");
 
-        identifierList(s);
+        identifierList(s,false);
 
         if(tok.tokenType==T.COLON)
             tok = scanner.nextToken();
@@ -142,13 +146,16 @@ public class Parser{
         type(s);
     }
 
-    public void identifierList(Semantics s)throws Exception{
+    public void identifierList(Semantics s, boolean readFlag)throws Exception{
         System.out.println("Identifier List");
 
         s.count=0;
         if(tok.tokenType==T.IDENTIFIER){
             s.start=symT.symbolIndex-1;
             s.count++;
+            if(readFlag){
+                quads.insertQuad("INPUT", "-", "-", tok.value+"");
+            }
             tok = scanner.nextToken();
         }
         else
@@ -158,6 +165,9 @@ public class Parser{
             tok = scanner.nextToken();
             if(tok.tokenType==T.IDENTIFIER){
                 s.count++;
+                if(readFlag){
+                    quads.insertQuad("INPUT", "", "", tok.value+"");
+                }
                 tok = scanner.nextToken();
             }
             else
@@ -266,7 +276,7 @@ public class Parser{
         System.out.println("Parameter List");
 
         //identifier_list : type { ; identifier_list : type}
-        identifierList(s);
+        identifierList(s,false);
         
         if(tok.tokenType==T.COLON)
             tok = scanner.nextToken();
@@ -277,7 +287,7 @@ public class Parser{
         
         while(tok.tokenType==T.SEMI){
             tok = scanner.nextToken();
-            identifierList(s);
+            identifierList(s,false);
 
             if(tok.tokenType==T.COLON)
                 tok=scanner.nextToken();
@@ -293,8 +303,10 @@ public class Parser{
         System.out.println("Compound Statement");
 
         //begin <statement_list> end
-        if(tok.tokenType==T.BEGIN)
+        if(tok.tokenType==T.BEGIN){
+            procedureFlag=true;
             tok = scanner.nextToken();
+        }
         else
             scanner.setError("Expecting Begin", scanner.line);
         
@@ -378,13 +390,6 @@ public class Parser{
         System.out.println("Expression");
 
         //simple_expression [ relop simple_expression]
-        /*
-        simpleExpression(s);
-        if(tok.tokenType==T.EQUAL || tok.tokenType==T.LT || tok.tokenType==T.LE || tok.tokenType==T.GT || tok.tokenType==T.NE || tok.tokenType==T.MOD || tok.tokenType==T.DIV || tok.tokenType==T.TIMES || tok.tokenType==T.PLUS || tok.tokenType==T.MINUS){
-            tok = scanner.nextToken();
-            simpleExpression(s);
-        }
-        */
         simpleExpression(s, x);
         if(tok.tokenType==T.EQUAL || tok.tokenType==T.LT || tok.tokenType==T.LE || tok.tokenType==T.GT || tok.tokenType==T.NE || tok.tokenType==T.MOD || tok.tokenType==T.DIV || tok.tokenType==T.TIMES || tok.tokenType==T.PLUS || tok.tokenType==T.MINUS){
             //int opCode = tok.tokenType;
@@ -392,7 +397,7 @@ public class Parser{
             tok = scanner.nextToken();
             Exp w = new Exp();
             simpleExpression(s, w); //w must come back integer or error
-            if(w.number || symT.symbols[w.value].tokenType==T.INTEGER){//W must be a NUM ex. *9 or if it's a ID the ID must be an integer
+            //if(w.number || symT.symbols[w.value].tokenType==T.INTEGER){//W must be a NUM ex. *9 or if it's a ID the ID must be an integer
                 int t = symT.getTemp(); //address of temp
                 symT.symbols[t].tokenType=T.BOOL;
                 symT.symbols[t].kind=T.TEMP;
@@ -408,10 +413,10 @@ public class Parser{
                 x.type=T.BOOL;
                 x.value=t;
                 x.number=false;
-            }
-            else{
-                scanner.setError("Error: Expecting number in expression()", scanner.line);
-            }
+            //}
+            // else{
+            //     scanner.setError("Error: Expecting number in expression()", scanner.line);
+            // }
         }
     }
 
@@ -476,9 +481,9 @@ public class Parser{
             factor(s, z);
             type1=y.type;
             type2=z.type;
-            if(type1!=type2){ //type mismatch
-                scanner.setError("Error, type mismatch ("+type1+" and "+type2+" do not match)", scanner.line);
-            }
+            // if(type1!=type2){ //type mismatch
+            //     scanner.setError("Error, type mismatch ("+type1+" and "+type2+" do not match)", scanner.line);
+            // }
             t=symT.getTemp();
             symT.symbols[t].tokenType=T.BOOL;
             symT.symbols[t].kind=T.TEMP;
@@ -681,7 +686,7 @@ public class Parser{
             scanner.setError("Expecting LParen", scanner.line);
 
         Semantics s = new Semantics();
-        identifierList(s);
+        identifierList(s,true);
 
         if(tok.tokenType==T.RPAREN)
             tok = scanner.nextToken();

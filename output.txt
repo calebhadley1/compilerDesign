@@ -1,0 +1,20 @@
+1  program vertical;
+2   var n: integer;
+3   procedure writeVertical(n:integer);
+4   begin
+5     if n < 10 then
+6     begin
+7       writeln (n);
+8     
+9     end
+10     else
+11      begin
+12       call writeVertical(n/10);
+13       writeln(n%10); 
+14       end;
+15    end;
+16    begin
+17      write('Enter a positive integer ');
+18      read (n);
+19      call writeVertical(n);
+20    end.
