@@ -6,18 +6,19 @@ program Hanoi;
     if n >0 then
     begin
         call move(n-1, start, extra, goal);
-        write(start);
-        write( ' --> ' ); !this is a comment
-        write(goal);
-        writeln(' ');
+        write(start); write( ' --> ' ); write(goal); writeln(' ');
        call move(n-1, extra, goal, start);
       end;
    end;
    
   begin
-     start := 1;
-     goal:= 3;
-      extra:= 2;
-  n := 3;
-      call move(n, start, goal, extra);
+     write('Enter number of disks' );
+     read (n);
+     write('Enter start' );
+     read(start) ;
+     write('Enter goal' );
+     read(goal);
+     write('Enter the extra' );
+     read(extra);
+     call move(n, start, goal, extra);
  end.
