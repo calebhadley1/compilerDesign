@@ -132,10 +132,10 @@ public class Scan {
         //System.out.println(t.value);
         
         if(t.tokenType==T.IDENTIFIER){
-            t.value = symT.insert(buf, procedureNum, t.tokenType, true, 0, 0, 0); //Default ID entry in symbol table -> modified by Semantics/Parser classes
+            t.value = symT.insert(buf, procedureNum, t.tokenType, false, 0, 0, 0, 0, 0); //Default ID entry in symbol table -> modified by Semantics/Parser classes
         }
         else if(t.tokenType==T.STRING){
-            t.value = symT.insert(buf, procedureNum, t.tokenType, true, 0, 0, 0);
+            t.value = symT.insert(buf, procedureNum, t.tokenType, false, 0, 0, 0, 0, 0);
         }
         else if(t.tokenType==T.NUMBER){
             t.value = Integer.parseInt(buf);

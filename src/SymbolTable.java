@@ -9,8 +9,10 @@ public class SymbolTable{
         int numArgs;
         int kind;
         int start;
+        int offset;
+        int memAddress;
 
-        public SymbolTableObject(String name, int scope, int tokenType, boolean declared, int numArgs, int kind, int start){
+        public SymbolTableObject(String name, int scope, int tokenType, boolean declared, int numArgs, int kind, int start, int offset, int memAddress){
             this.name=name;
             this.scope=scope;
             this.tokenType=tokenType;
@@ -18,6 +20,8 @@ public class SymbolTable{
             this.numArgs=numArgs;
             this.kind=kind;
             this.start=start;
+            this.offset=offset;
+            this.memAddress=memAddress;
         }
     }
 
@@ -55,7 +59,7 @@ public class SymbolTable{
     }
 
     //Inserts a new item into the Symbol or String table based on its tokenType -> 37==string and 35==symbol
-    public int insert(String name, int scope, int tokenType, boolean declared, int numArgs, int kind, int start){
+    public int insert(String name, int scope, int tokenType, boolean declared, int numArgs, int kind, int start, int offset, int memAddress){
         int curr = -1;
         if(tokenType!=37){
             int index = search(name,scope,tokenType);
@@ -64,7 +68,7 @@ public class SymbolTable{
             }
             else{
                 curr = symbolIndex;
-                symbols[curr] = new SymbolTableObject(name, scope, tokenType, declared, numArgs, kind, start);
+                symbols[curr] = new SymbolTableObject(name, scope, tokenType, declared, numArgs, kind, start, offset, curr);
                 symbolIndex++;
             }
         }
@@ -75,7 +79,7 @@ public class SymbolTable{
             }
             else{
                 curr = stringIndex;
-                symbols[curr] = new SymbolTableObject(name, scope, tokenType, declared, numArgs, kind, start);
+                symbols[curr] = new SymbolTableObject(name, scope, tokenType, declared, numArgs, kind, start, offset, curr);
                 stringIndex++;
             }
         }
@@ -85,7 +89,7 @@ public class SymbolTable{
     public int getTemp(){
         String temp = "@t" + tempNum;
         int place = symbolIndex;
-        insert(temp, 0, 0, true, 0, 0, 0);
+        insert(temp, 0, 0, true, 0, 0, 0, 0, place);
         tempNum++;
         return place;
     }

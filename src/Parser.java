@@ -12,10 +12,9 @@ public class Parser{
     Token tok;
 
     PrintWriter pw; // for symboltable_output.txt
+    int[] locals = new int[20]; //index by the scope number (for interpreter)
 
     HelperMethods hm;
-
-    boolean procedureFlag;
 
     public Parser(String filename)throws Exception{
         symT = new SymbolTable();
@@ -23,17 +22,16 @@ public class Parser{
         quads = new Quads();
         pw = new PrintWriter(new File("symbolTableOutput.txt"));  
         hm = new HelperMethods();  
-        procedureFlag=false;
     }
 
     public void writeSymbolTable()throws Exception{
         pw.write("Symbol Table:");
         pw.println("");
-        pw.write("Index\t" + "Name\t" + "Scope\t"+ "tokenType\t"+ "Declared\t" + "NumArgs\t" + "Kind\t" + "Start\t");
+        pw.write("Index\t" + "Name\t" + "Scope\t"+ "tokenType\t"+ "Declared\t" + "NumArgs\t" + "Kind\t" + "Start\t" + "Offset\t");
         int i=0;
         while(symT.symbols[i]!=null){
             pw.println();
-            pw.write(i + "\t\t" + symT.symbols[i].name + "\t" + symT.symbols[i].scope + "\t\t" + symT.symbols[i].tokenType + "\t\t\t" + symT.symbols[i].declared + "\t\t" + symT.symbols[i].numArgs + "\t\t" + symT.symbols[i].kind + "\t\t" + symT.symbols[i].start);
+            pw.write(i + "\t\t" + symT.symbols[i].name + "\t" + symT.symbols[i].scope + "\t\t" + symT.symbols[i].tokenType + "\t\t\t" + symT.symbols[i].declared + "\t\t" + symT.symbols[i].numArgs + "\t\t" + symT.symbols[i].kind + "\t\t" + symT.symbols[i].start + "\t\t" + symT.symbols[i].offset);
             i++;
         }
         pw.println();
@@ -53,6 +51,7 @@ public class Parser{
             tok = scanner.nextToken();
             symT.symbols[symT.symbolIndex-1].tokenType=T.PROGRAM;
             symT.symbols[symT.symbolIndex-1].kind=T.PROGRAM;
+            symT.symbols[symT.symbolIndex-1].declared=true;
         }
         else
             scanner.setError("Expecting program",scanner.line);
@@ -76,8 +75,6 @@ public class Parser{
 
         scanner.procedureNum=0; //Reset scope since we are entering main block
 
-        if(procedureFlag)
-            quads.insertQuad("EXIT", "-", "-", "-");
         int loc2 = quads.getQuad();
         quads.setResult(loc1, loc2+"");
 
@@ -109,6 +106,9 @@ public class Parser{
                 quads.insertQuad("DCL", "-", "-", s.start+j+"");
                 symT.symbols[s.start+j].tokenType=s.type;
                 symT.symbols[s.start+j].kind=T.LOCAL;
+                symT.symbols[s.start+j].declared=true;
+                locals[scanner.procedureNum]++;
+                symT.symbols[s.start+j].offset=locals[scanner.procedureNum];
             }
 
             if(tok.tokenType==T.SEMI)
@@ -122,6 +122,9 @@ public class Parser{
                 for(int j=0; j<s.count; j++){
                     symT.symbols[temp+j].tokenType=s.type;
                     symT.symbols[temp+j].kind=T.LOCAL;
+                    symT.symbols[s.start+j].declared=true;
+                    locals[scanner.procedureNum]++;
+                    symT.symbols[s.start+j].offset=locals[scanner.procedureNum];
                 }
                 
                 if(tok.tokenType==T.SEMI)
@@ -213,21 +216,26 @@ public class Parser{
         variableDeclarations();
 
         compoundStatement();
+        quads.insertQuad("EXIT", "-", "-", "-");
     }
 
     public void subprogramHead()throws Exception{
         System.out.println("Subprogram Head");
 
         //procedure id arguments ;
-        int temp = symT.symbolIndex;
+        int place = symT.symbolIndex;
 
         if(tok.tokenType==T.PROCEDURE){
             tok = scanner.nextToken();
-            symT.symbols[symT.symbolIndex-1].scope=0;
-            symT.symbols[symT.symbolIndex-1].tokenType=T.PROCEDURE;
-            symT.symbols[symT.symbolIndex-1].kind=T.PROCEDURE;
-            symT.symbols[symT.symbolIndex-1].start=symT.symbolIndex-1;
-            quads.insertQuad("PROCDEC", "-", "-", symT.symbolIndex-1+"");
+            symT.symbols[place].scope=0;
+            symT.symbols[place].tokenType=T.PROCEDURE;
+            symT.symbols[place].kind=T.PROCEDURE;
+            symT.symbols[place].start=symT.symbolIndex-1;
+            if(symT.symbols[place].declared==false)
+                symT.symbols[place].declared=true;
+            else
+                scanner.setError("Error: Procedure already declared", scanner.line);
+            quads.insertQuad("PROCDEC", "-", "-", place+"");
         }
         else
             scanner.setError("Expecting Procedure", scanner.line);
@@ -238,15 +246,7 @@ public class Parser{
             scanner.setError("Expecting ID", scanner.line);
         
         Semantics s = new Semantics();
-        arguments(s);
-        s.start--; //Compensating for the LParen in Arguments as opposed to no paren in VarDecs
-        symT.symbols[temp].numArgs=s.count;
-
-        for(int j=1; j<=s.count; j++){
-            symT.symbols[temp+j].tokenType=s.type;
-            symT.symbols[temp+j].kind=T.PARM;
-            quads.insertQuad("PARAM", "-", "-", temp+j+"");
-        }
+        arguments(s, place);
 
         if(tok.tokenType==T.SEMI)
             tok = scanner.nextToken();
@@ -254,7 +254,7 @@ public class Parser{
             scanner.setError("Expecting Semi-Colon", scanner.line);
     }
 
-    public void arguments(Semantics s)throws Exception{
+    public void arguments(Semantics s, int place)throws Exception{
         System.out.println("Arguments");
 
         //( parameter_list)
@@ -264,7 +264,7 @@ public class Parser{
         else
             scanner.setError("Expecting Left Paren", scanner.line);
 
-        parameterList(s);
+        parameterList(s, place);
 
         if(tok.tokenType==T.RPAREN)
             tok = scanner.nextToken();
@@ -272,7 +272,7 @@ public class Parser{
             scanner.setError("Expecting Right Paren", scanner.line);
     }
 
-    public void parameterList(Semantics s)throws Exception{
+    public void parameterList(Semantics s, int place)throws Exception{
         System.out.println("Parameter List");
 
         //identifier_list : type { ; identifier_list : type}
@@ -296,17 +296,26 @@ public class Parser{
             
             type(s);
         }
-
+        //s.start--; //Compensating for the LParen in Arguments as opposed to no paren in VarDecs
+        for(int j= s.start; j<s.start+s.count; j++){
+            symT.symbols[place].numArgs++;
+            symT.symbols[j].tokenType=s.type;
+            symT.symbols[j].kind=T.PARM;
+            symT.symbols[j].offset=symT.symbols[place].numArgs;
+            if(symT.symbols[j].declared==false)
+                symT.symbols[j].declared=true;
+            else
+                scanner.setError("Parameter already declared", scanner.line);
+            quads.insertQuad("PARAM", "-", "-", j+"");
+        }
     }
 
     public void compoundStatement()throws Exception{
         System.out.println("Compound Statement");
 
         //begin <statement_list> end
-        if(tok.tokenType==T.BEGIN){
-            procedureFlag=true;
+        if(tok.tokenType==T.BEGIN)
             tok = scanner.nextToken();
-        }
         else
             scanner.setError("Expecting Begin", scanner.line);
         
@@ -399,6 +408,8 @@ public class Parser{
             simpleExpression(s, w); //w must come back integer or error
             //if(w.number || symT.symbols[w.value].tokenType==T.INTEGER){//W must be a NUM ex. *9 or if it's a ID the ID must be an integer
                 int t = symT.getTemp(); //address of temp
+                locals[scanner.procedureNum]++;
+                symT.symbols[t].offset=locals[scanner.procedureNum];
                 symT.symbols[t].tokenType=T.BOOL;
                 symT.symbols[t].kind=T.TEMP;
                 symT.symbols[t].scope=scanner.procedureNum;
@@ -444,6 +455,8 @@ public class Parser{
             //     scanner.setError("Error, type mismatch ("+type1+" and "+type2+" do not match)", scanner.line);
             // }
             t=symT.getTemp();
+            locals[scanner.procedureNum]++;
+            symT.symbols[t].offset=locals[scanner.procedureNum];
             symT.symbols[t].tokenType=T.BOOL;
             symT.symbols[t].kind=T.TEMP;
             symT.symbols[t].scope=scanner.procedureNum;
@@ -485,6 +498,8 @@ public class Parser{
             //     scanner.setError("Error, type mismatch ("+type1+" and "+type2+" do not match)", scanner.line);
             // }
             t=symT.getTemp();
+            locals[scanner.procedureNum]++;
+            symT.symbols[t].offset=locals[scanner.procedureNum];
             symT.symbols[t].tokenType=T.BOOL;
             symT.symbols[t].kind=T.TEMP;
             symT.symbols[t].scope=scanner.procedureNum;
@@ -544,6 +559,8 @@ public class Parser{
             if(x.type==T.INTEGER)
                 scanner.setError("Error: Cannot apply boolean NOT to Integer "+x.value, scanner.line);
             int t = symT.getTemp();
+            locals[scanner.procedureNum]++;
+            symT.symbols[t].offset=locals[scanner.procedureNum];
             symT.symbols[t].kind=T.TEMP;
             symT.symbols[t].scope=scanner.procedureNum;
             symT.symbols[t].tokenType=T.BOOL;
@@ -559,15 +576,16 @@ public class Parser{
     public void procedureStatement()throws Exception{
         System.out.println("Procedure Statement");
         //call id (expression_list)
-        int place;
+        int parameterCount=0;
+        int start=0;
         if(tok.tokenType==T.CALL)
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting Call", scanner.line);
 
-        place = quads.getQuad();
         if(tok.tokenType==T.IDENTIFIER){
-            quads.insertQuad("CALL", tok.value+"", 0+"", "-");
+            start=tok.value;
+            //quads.insertQuad("CALL", tok.value+"", 0+"", "-");
             tok = scanner.nextToken();
         }
         else
@@ -581,29 +599,45 @@ public class Parser{
         Semantics s = new Semantics();
         s.start=symT.symbolIndex-1;
         s.type=T.INTEGER;
-        expressionList(s);
-        for(int j=s.start; j<=s.count; j++){
-             symT.symbols[j].tokenType=s.type;
-             symT.symbols[j].kind=T.PARM;
-        }
-        quads.setArg2(place, s.count+"");
+        parameterCount=expressionList(s);
 
         if(tok.tokenType==T.RPAREN)
             tok = scanner.nextToken();
         else
             scanner.setError("Expecting RParen", scanner.line);
+
+        if(symT.symbols[start].numArgs!=parameterCount){
+            System.out.println("start"+start);
+            scanner.setError("Error: Num parameters: "+parameterCount+" != num args required:"+symT.symbols[start].numArgs, scanner.line);
+        }
+        else{
+            quads.insertQuad("CALL", start+"", parameterCount+"", "-");
+        }
     }
 
-    public void expressionList(Semantics s)throws Exception{
+    public int expressionList(Semantics s)throws Exception{
         System.out.println("Expression List");
 
         //expression { , expression }
+        int count = 0;
         Exp x = new Exp();
         expression(s, x);
+        quads.insertQuad("ARG", "-", "-", x.value+"");
+        // if(x.type!=T.INTEGER){
+        //     scanner.setError("Expecting Integer", scanner.line);
+        // }
+        count++;
         while(tok.tokenType==T.COMMA){
             tok = scanner.nextToken();
+            x = new Exp();
             expression(s, x);
+            quads.insertQuad("ARG", "-", "-", x.value+"");
+            // if(x.type!=T.INTEGER){
+            //     scanner.setError("Expecting Integer", scanner.line);
+            // }
+            count++;
         }
+        return count;
     }
 
     public void ifStatement()throws Exception{
