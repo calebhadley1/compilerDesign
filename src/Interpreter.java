@@ -42,7 +42,7 @@ public class Interpreter {
         System.out.println("Running Interpreter:");
         QuadType q = p.quads.quads[pc];
         while(!q.arg1.equals("END")){ //Run until we hit END quad
-            q.printQuad();
+            //q.printQuad();
             if(q.op.equals("ADD")){
                 handleAdd(q);
             }
@@ -109,11 +109,98 @@ public class Interpreter {
             // System.out.println("PC"+pc);
             // System.out.println("SP"+sp);
             // System.out.println("TOP"+top);
-            memory.printMemory();
+            // memory.printMemory();
             q = p.quads.quads[pc];
         }
     }
 
+    // public void handleAdd(QuadType q){
+    //     boolean arg1NumFlag=false;
+    //     boolean arg2NumFlag=false;
+    //     if(q.arg1.substring(0,1).equals("*")) //* number val
+    //         arg1NumFlag=true;
+    //     if(q.arg2.substring(0,1).equals("*")) //* number val
+    //         arg2NumFlag=true;
+        
+    //     int offset=0;
+    //     int argcount=0;
+    //     int R=0;
+    //     int offset2=0;
+    //     int S=0;
+    //     if(arg1NumFlag==false){
+    //         offset = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
+    //         if(numActivationRecords==0)
+    //             R=sp-offset;
+    //         else{
+    //             // argcount = memory.memoryData[sp+3];
+    //             // R = sp + 3 + argcount - offset + 1;
+    //             R=sp-offset;
+    //         }
+    //     }
+
+    //     if(arg2NumFlag==false){
+    //         offset2 = p.symT.symbols[Integer.parseInt(q.arg2)].offset;
+    //         if(numActivationRecords==0)
+    //             S=sp-offset2;
+    //         else
+    //             S=sp-offset2;
+    //             //S = sp + 3 + argcount - offset2 + 1;
+    //     } 
+
+    //     int result;
+    //     if(arg1NumFlag==false && arg2NumFlag==false){ //neither are number (*1)
+    //         result = memory.memoryData[R]+memory.memoryData[S];
+    //     }
+    //     else if(arg1NumFlag==true && arg2NumFlag==false){
+    //         result = Integer.parseInt((q.arg1).substring(1))+memory.memoryData[S];
+    //     }
+    //     else if(arg1NumFlag==false && arg2NumFlag==true){
+    //         result = memory.memoryData[R]+Integer.parseInt((q.arg2).substring(1));
+    //     }
+    //     else{
+    //         result = Integer.parseInt((q.arg1).substring(1))+Integer.parseInt((q.arg2).substring(1));
+    //     }
+    //     //store result
+    //     if(p.symT.symbols[Integer.parseInt(q.result)].kind==T.TEMP){ //temp symT address
+    //         // top--;
+    //         // String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
+    //         // memory.memoryData[top]=Integer.parseInt(nameSubStr);
+    //         // memory.memoryNotes[top]="Storage for temp @"+nameSubStr;
+    //         // int T = top;
+    //         // memory.memoryData[T]=result;
+            
+    //         //int T = sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
+    //         int T=0;
+    //         if(numActivationRecords==0)
+    //             T =sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
+    //         else
+    //             T =sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
+    //             //T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
+    //         String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
+    //         memory.memoryNotes[T]="Storage for temp @"+nameSubStr;
+    //         memory.memoryData[T]=result;
+    //     }
+    //     else{//non temp symT address
+    //         // top--;
+    //         // String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
+    //         // memory.memoryData[top]=Integer.parseInt(nameSubStr);
+    //         // memory.memoryNotes[top]="Storage for local "+nameSubStr;
+    //         // int T = top;
+    //         // memory.memoryData[T]=result;
+            
+    //         //int T = sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
+    //         int T=0;
+    //         if(numActivationRecords==0)
+    //             T =sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
+    //         else
+    //             T =sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
+    //             //T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
+    //         String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
+    //         memory.memoryNotes[T]="Storage for local @"+nameSubStr;
+    //         memory.memoryData[T]=result;
+    //     }
+    //     pc++;
+    // }
     public void handleAdd(QuadType q){
         boolean arg1NumFlag=false;
         boolean arg2NumFlag=false;
@@ -129,9 +216,9 @@ public class Interpreter {
         int S=0;
         if(arg1NumFlag==false){
             offset = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
-            if(numActivationRecords==0)
+            if(p.symT.symbols[Integer.parseInt(q.arg1)].kind==T.LOCAL || p.symT.symbols[Integer.parseInt(q.arg1)].kind==T.TEMP)
                 R=sp-offset;
-            else{
+            else{//T.PARM
                 argcount = memory.memoryData[sp+3];
                 R = sp + 3 + argcount - offset + 1;
             }
@@ -139,10 +226,12 @@ public class Interpreter {
 
         if(arg2NumFlag==false){
             offset2 = p.symT.symbols[Integer.parseInt(q.arg2)].offset;
-            if(numActivationRecords==0)
+            if(p.symT.symbols[Integer.parseInt(q.arg2)].kind==T.LOCAL || p.symT.symbols[Integer.parseInt(q.arg2)].kind==T.TEMP)
                 S=sp-offset2;
-            else
+            else{//T.PARM
+                argcount = memory.memoryData[sp+3];
                 S = sp + 3 + argcount - offset2 + 1;
+            }
         } 
 
         int result;
@@ -160,27 +249,22 @@ public class Interpreter {
         }
         //store result
         if(p.symT.symbols[Integer.parseInt(q.result)].kind==T.TEMP){ //temp symT address
-            // top--;
-            // String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
-            // memory.memoryData[top]=Integer.parseInt(nameSubStr);
-            // memory.memoryNotes[top]="Storage for temp @"+nameSubStr;
-            // int T = top;
-            // memory.memoryData[T]=result;
-            int T = sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
+            int T =sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
             String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
             memory.memoryNotes[T]="Storage for temp @"+nameSubStr;
             memory.memoryData[T]=result;
         }
-        else{//non temp symT address
-            // top--;
-            // String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            // memory.memoryData[top]=Integer.parseInt(nameSubStr);
-            // memory.memoryNotes[top]="Storage for local "+nameSubStr;
-            // int T = top;
-            // memory.memoryData[T]=result;
-            int T = sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
+        else if(p.symT.symbols[Integer.parseInt(q.result)].kind==T.LOCAL){//non temp symT address
+            int T =sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
             String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
             memory.memoryNotes[T]="Storage for local @"+nameSubStr;
+            memory.memoryData[T]=result;
+        }
+        else{//T.PARM
+            int T=0;
+            T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
+            String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
+            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             memory.memoryData[T]=result;
         }
         pc++;
@@ -196,18 +280,76 @@ public class Interpreter {
         pc++;
     }
 
-    public void handleAssignment(QuadType q){
-        int offset = p.symT.symbols[Integer.parseInt(q.result)].offset;
-        int T = sp - offset;
+    // public void handleAssignment(QuadType q){
+    //     int offset = p.symT.symbols[Integer.parseInt(q.result)].offset;
+    //     int T = sp - offset;
         
-        if(q.arg1.substring(0,1).equals("*")){
-            memory.memoryData[T]=Integer.parseInt(q.arg1.substring(1));
+    //     if(q.arg1.substring(0,1).equals("*")){
+    //         memory.memoryData[T]=Integer.parseInt(q.arg1.substring(1));
+    //     }
+    //     else{
+    //         //find address of other var and assign it's value
+    //         int offset2 = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
+            
+    //         //int W = sp - offset2;
+    //         int W =0;
+    //         int argcount=0;
+    //         if(numActivationRecords==0)
+    //             W=sp-offset2;
+    //         else{
+    //             W= sp + 3 + argcount - offset2 + 1;
+    //         }
+    //         memory.memoryData[T]=memory.memoryData[W];
+    //     }
+    //     pc++;
+    // }
+
+    public void handleAssignment(QuadType q){
+        boolean arg1NumFlag=false;
+        if(q.arg1.substring(0,1).equals("*")) //* number val
+            arg1NumFlag=true;
+        
+        int offset=0;
+        int argcount=0;
+        int R=0;
+        int offset2=0;
+        int S=0;
+        if(arg1NumFlag==false){
+            offset = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
+            if(p.symT.symbols[Integer.parseInt(q.arg1)].kind==T.LOCAL || p.symT.symbols[Integer.parseInt(q.arg1)].kind==T.TEMP)
+                R=sp-offset;
+            else{//T.PARM
+                argcount = memory.memoryData[sp+3];
+                R = sp + 3 + argcount - offset + 1;
+            }
+        }
+
+        int result;
+        if(arg1NumFlag==false){ //neither are number (*1)
+            result = memory.memoryData[R];
         }
         else{
-            //find address of other var and assign it's value
-            int offset2 = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
-            int W = sp - offset2;
-            memory.memoryData[T]=memory.memoryData[W];
+            result = Integer.parseInt((q.arg1).substring(1));
+        }
+        //store result
+        if(p.symT.symbols[Integer.parseInt(q.result)].kind==T.TEMP){ //temp symT address
+            int T =sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
+            String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
+            memory.memoryNotes[T]="Storage for temp @"+nameSubStr;
+            memory.memoryData[T]=result;
+        }
+        else if(p.symT.symbols[Integer.parseInt(q.result)].kind==T.LOCAL){//non temp symT address
+            int T =sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
+            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
+            memory.memoryNotes[T]="Storage for local @"+nameSubStr;
+            memory.memoryData[T]=result;
+        }
+        else{//T.PARM
+            int T=0;
+            T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
+            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
+            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
+            memory.memoryData[T]=result;
         }
         pc++;
     }
@@ -342,6 +484,82 @@ public class Interpreter {
         System.exit(0);
     }
 
+    public void handleEqual(QuadType q){
+        // int offset = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
+        // int argcount = memory.memoryData[sp+3];
+        // int R = sp + 3 + argcount - offset + 1;
+
+        // int offset2 = p.symT.symbols[Integer.parseInt(q.arg2)].offset;
+        // int S = sp + 3 + argcount - offset2 + 1;
+        boolean arg1NumFlag=false;
+        boolean arg2NumFlag=false;
+        if(q.arg1.substring(0,1).equals("*")) //* number val
+            arg1NumFlag=true;
+        if(q.arg2.substring(0,1).equals("*")) //* number val
+            arg2NumFlag=true;
+        
+        int offset=0;
+        int argcount=0;
+        int R=0;
+        int offset2=0;
+        int S=0;
+        if(arg1NumFlag==false){
+            offset = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
+            if(numActivationRecords==0)
+                R=sp-offset;
+            else{
+                argcount = memory.memoryData[sp+3];
+                R = sp + 3 + argcount - offset + 1;
+            }
+        }
+
+        if(arg2NumFlag==false){
+            offset2 = p.symT.symbols[Integer.parseInt(q.arg2)].offset;
+            if(numActivationRecords==0)
+                S=sp-offset2;
+            else
+                S = sp + 3 + argcount - offset2 + 1;
+        } 
+
+        boolean result;
+        if(arg1NumFlag==false && arg2NumFlag==false){ //neither are number (*1)
+            result = memory.memoryData[R]==memory.memoryData[S];
+        }
+        else if(arg1NumFlag==true && arg2NumFlag==false){
+            result = Integer.parseInt((q.arg1).substring(1))==memory.memoryData[S];
+        }
+        else if(arg1NumFlag==false && arg2NumFlag==true){
+            result = memory.memoryData[R]==Integer.parseInt((q.arg2).substring(1));
+        }
+        else{
+            result = Integer.parseInt((q.arg1).substring(1))==Integer.parseInt((q.arg2).substring(1));
+        }
+
+        if(p.symT.symbols[Integer.parseInt(q.result)].kind==T.TEMP){
+            top--;
+            String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
+            memory.memoryData[top]=Integer.parseInt(nameSubStr);
+            memory.memoryNotes[top]="Storage for temp @"+nameSubStr;
+            int T = top;
+            if(result)
+                memory.memoryData[T]=1;
+            else
+                memory.memoryData[T]=0;
+        }
+        else{
+            top--;
+            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
+            memory.memoryData[top]=Integer.parseInt(nameSubStr);
+            memory.memoryNotes[top]="Storage for local "+nameSubStr;
+            int T = top;
+            if(result)
+                memory.memoryData[T]=1;
+            else
+                memory.memoryData[T]=0;
+        }
+        pc++;
+    }
+
     public void handleExit(QuadType q){
         //find return address
         top = sp + 2;
@@ -369,6 +587,234 @@ public class Interpreter {
             System.exit(0);
         }
         memory.memoryData[address]=inputInt;
+        pc++;
+    }
+
+    public void handleGE(QuadType q){
+        // int offset = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
+        // int argcount = memory.memoryData[sp+3];
+        // int R = sp + 3 + argcount - offset + 1;
+
+        // int offset2 = p.symT.symbols[Integer.parseInt(q.arg2)].offset;
+        // int S = sp + 3 + argcount - offset2 + 1;
+        boolean arg1NumFlag=false;
+        boolean arg2NumFlag=false;
+        if(q.arg1.substring(0,1).equals("*")) //* number val
+            arg1NumFlag=true;
+        if(q.arg2.substring(0,1).equals("*")) //* number val
+            arg2NumFlag=true;
+        
+        int offset=0;
+        int argcount=0;
+        int R=0;
+        int offset2=0;
+        int S=0;
+        if(arg1NumFlag==false){
+            offset = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
+            if(numActivationRecords==0)
+                R=sp-offset;
+            else{
+                argcount = memory.memoryData[sp+3];
+                R = sp + 3 + argcount - offset + 1;
+            }
+        }
+
+        if(arg2NumFlag==false){
+            offset2 = p.symT.symbols[Integer.parseInt(q.arg2)].offset;
+            if(numActivationRecords==0)
+                S=sp-offset2;
+            else
+                S = sp + 3 + argcount - offset2 + 1;
+        } 
+
+        boolean result;
+        if(arg1NumFlag==false && arg2NumFlag==false){ //neither are number (*1)
+            result = memory.memoryData[R]>=memory.memoryData[S];
+        }
+        else if(arg1NumFlag==true && arg2NumFlag==false){
+            result = Integer.parseInt((q.arg1).substring(1))>=memory.memoryData[S];
+        }
+        else if(arg1NumFlag==false && arg2NumFlag==true){
+            result = memory.memoryData[R]>=Integer.parseInt((q.arg2).substring(1));
+        }
+        else{
+            result = Integer.parseInt((q.arg1).substring(1))>=Integer.parseInt((q.arg2).substring(1));
+        }
+
+        if(p.symT.symbols[Integer.parseInt(q.result)].kind==T.TEMP){
+            top--;
+            String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
+            memory.memoryData[top]=Integer.parseInt(nameSubStr);
+            memory.memoryNotes[top]="Storage for temp @"+nameSubStr;
+            int T = top;
+            if(result)
+                memory.memoryData[T]=1;
+            else
+                memory.memoryData[T]=0;
+        }
+        else{
+            top--;
+            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
+            memory.memoryData[top]=Integer.parseInt(nameSubStr);
+            memory.memoryNotes[top]="Storage for local "+nameSubStr;
+            int T = top;
+            if(result)
+                memory.memoryData[T]=1;
+            else
+                memory.memoryData[T]=0;
+        }
+        pc++;
+    }
+
+    public void handleGT(QuadType q){
+        // int offset = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
+        // int argcount = memory.memoryData[sp+3];
+        // int R = sp + 3 + argcount - offset + 1;
+
+        // int offset2 = p.symT.symbols[Integer.parseInt(q.arg2)].offset;
+        // int S = sp + 3 + argcount - offset2 + 1;
+        boolean arg1NumFlag=false;
+        boolean arg2NumFlag=false;
+        if(q.arg1.substring(0,1).equals("*")) //* number val
+            arg1NumFlag=true;
+        if(q.arg2.substring(0,1).equals("*")) //* number val
+            arg2NumFlag=true;
+        
+        int offset=0;
+        int argcount=0;
+        int R=0;
+        int offset2=0;
+        int S=0;
+        if(arg1NumFlag==false){
+            offset = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
+            if(numActivationRecords==0)
+                R=sp-offset;
+            else{
+                argcount = memory.memoryData[sp+3];
+                R = sp + 3 + argcount - offset + 1;
+            }
+        }
+
+        if(arg2NumFlag==false){
+            offset2 = p.symT.symbols[Integer.parseInt(q.arg2)].offset;
+            if(numActivationRecords==0)
+                S=sp-offset2;
+            else
+                S = sp + 3 + argcount - offset2 + 1;
+        } 
+
+        boolean result;
+        if(arg1NumFlag==false && arg2NumFlag==false){ //neither are number (*1)
+            result = memory.memoryData[R]>memory.memoryData[S];
+        }
+        else if(arg1NumFlag==true && arg2NumFlag==false){
+            result = Integer.parseInt((q.arg1).substring(1))>memory.memoryData[S];
+        }
+        else if(arg1NumFlag==false && arg2NumFlag==true){
+            result = memory.memoryData[R]>Integer.parseInt((q.arg2).substring(1));
+        }
+        else{
+            result = Integer.parseInt((q.arg1).substring(1))>Integer.parseInt((q.arg2).substring(1));
+        }
+
+        if(p.symT.symbols[Integer.parseInt(q.result)].kind==T.TEMP){
+            top--;
+            String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
+            memory.memoryData[top]=Integer.parseInt(nameSubStr);
+            memory.memoryNotes[top]="Storage for temp @"+nameSubStr;
+            int T = top;
+            if(result)
+                memory.memoryData[T]=1;
+            else
+                memory.memoryData[T]=0;
+        }
+        else{
+            top--;
+            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
+            memory.memoryData[top]=Integer.parseInt(nameSubStr);
+            memory.memoryNotes[top]="Storage for local "+nameSubStr;
+            int T = top;
+            if(result)
+                memory.memoryData[T]=1;
+            else
+                memory.memoryData[T]=0;
+        }
+        pc++;
+    }
+
+    public void handleLE(QuadType q){
+        // int offset = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
+        // int argcount = memory.memoryData[sp+3];
+        // int R = sp + 3 + argcount - offset + 1;
+
+        // int offset2 = p.symT.symbols[Integer.parseInt(q.arg2)].offset;
+        // int S = sp + 3 + argcount - offset2 + 1;
+        boolean arg1NumFlag=false;
+        boolean arg2NumFlag=false;
+        if(q.arg1.substring(0,1).equals("*")) //* number val
+            arg1NumFlag=true;
+        if(q.arg2.substring(0,1).equals("*")) //* number val
+            arg2NumFlag=true;
+        
+        int offset=0;
+        int argcount=0;
+        int R=0;
+        int offset2=0;
+        int S=0;
+        if(arg1NumFlag==false){
+            offset = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
+            if(numActivationRecords==0)
+                R=sp-offset;
+            else{
+                argcount = memory.memoryData[sp+3];
+                R = sp + 3 + argcount - offset + 1;
+            }
+        }
+
+        if(arg2NumFlag==false){
+            offset2 = p.symT.symbols[Integer.parseInt(q.arg2)].offset;
+            if(numActivationRecords==0)
+                S=sp-offset2;
+            else
+                S = sp + 3 + argcount - offset2 + 1;
+        } 
+
+        boolean result;
+        if(arg1NumFlag==false && arg2NumFlag==false){ //neither are number (*1)
+            result = memory.memoryData[R]<=memory.memoryData[S];
+        }
+        else if(arg1NumFlag==true && arg2NumFlag==false){
+            result = Integer.parseInt((q.arg1).substring(1))<=memory.memoryData[S];
+        }
+        else if(arg1NumFlag==false && arg2NumFlag==true){
+            result = memory.memoryData[R]<=Integer.parseInt((q.arg2).substring(1));
+        }
+        else{
+            result = Integer.parseInt((q.arg1).substring(1))<=Integer.parseInt((q.arg2).substring(1));
+        }
+
+        if(p.symT.symbols[Integer.parseInt(q.result)].kind==T.TEMP){
+            top--;
+            String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
+            memory.memoryData[top]=Integer.parseInt(nameSubStr);
+            memory.memoryNotes[top]="Storage for temp @"+nameSubStr;
+            int T = top;
+            if(result)
+                memory.memoryData[T]=1;
+            else
+                memory.memoryData[T]=0;
+        }
+        else{
+            top--;
+            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
+            memory.memoryData[top]=Integer.parseInt(nameSubStr);
+            memory.memoryNotes[top]="Storage for local "+nameSubStr;
+            int T = top;
+            if(result)
+                memory.memoryData[T]=1;
+            else
+                memory.memoryData[T]=0;
+        }
         pc++;
     }
 
@@ -686,9 +1132,9 @@ public class Interpreter {
         int S=0;
         if(arg1NumFlag==false){
             offset = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
-            if(numActivationRecords==0)
+            if(p.symT.symbols[Integer.parseInt(q.arg1)].kind==T.LOCAL || p.symT.symbols[Integer.parseInt(q.arg1)].kind==T.TEMP)
                 R=sp-offset;
-            else{
+            else{//T.PARM
                 argcount = memory.memoryData[sp+3];
                 R = sp + 3 + argcount - offset + 1;
             }
@@ -696,10 +1142,12 @@ public class Interpreter {
 
         if(arg2NumFlag==false){
             offset2 = p.symT.symbols[Integer.parseInt(q.arg2)].offset;
-            if(numActivationRecords==0)
+            if(p.symT.symbols[Integer.parseInt(q.arg2)].kind==T.LOCAL || p.symT.symbols[Integer.parseInt(q.arg2)].kind==T.TEMP)
                 S=sp-offset2;
-            else
+            else{//T.PARM
+                argcount = memory.memoryData[sp+3];
                 S = sp + 3 + argcount - offset2 + 1;
+            }
         } 
 
         int result;
@@ -717,27 +1165,22 @@ public class Interpreter {
         }
         //store result
         if(p.symT.symbols[Integer.parseInt(q.result)].kind==T.TEMP){ //temp symT address
-            // top--;
-            // String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
-            // memory.memoryData[top]=Integer.parseInt(nameSubStr);
-            // memory.memoryNotes[top]="Storage for temp @"+nameSubStr;
-            // int T = top;
-            // memory.memoryData[T]=result;
-            int T = sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
+            int T =sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
             String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
             memory.memoryNotes[T]="Storage for temp @"+nameSubStr;
             memory.memoryData[T]=result;
         }
-        else{//non temp symT address
-            // top--;
-            // String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            // memory.memoryData[top]=Integer.parseInt(nameSubStr);
-            // memory.memoryNotes[top]="Storage for local "+nameSubStr;
-            // int T = top;
-            // memory.memoryData[T]=result;
-            int T = sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
-            String nameSubStr = (p.symT.symbols[Integer.parseInt(q.result)].name).substring(2);
+        else if(p.symT.symbols[Integer.parseInt(q.result)].kind==T.LOCAL){//non temp symT address
+            int T =sp - p.symT.symbols[Integer.parseInt(q.result)].offset;
+            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
             memory.memoryNotes[T]="Storage for local @"+nameSubStr;
+            memory.memoryData[T]=result;
+        }
+        else{//T.PARM
+            int T=0;
+            T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
+            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
+            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             memory.memoryData[T]=result;
         }
         pc++;
