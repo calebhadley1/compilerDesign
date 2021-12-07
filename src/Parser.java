@@ -81,7 +81,7 @@ public class Parser{
         compoundStatement();
 
         if(tok.tokenType==T.PERIOD){
-            quads.insertQuad("End","-","-","-");
+            quads.insertQuad("END","-","-","-");
             if(scanner.error=="")//no errors during parse
                 System.out.println("Success");
             else
@@ -667,7 +667,7 @@ public class Parser{
             tok = scanner.nextToken();
             loc2=quads.getQuad();
             quads.insertQuad("BR", "-", "-", 0+"");
-            quads.setResult(loc1, loc2+"");
+            quads.setResult(loc1, quads.getQuad()+"");
             statement();
             quads.setResult(loc2, quads.getQuad()+"");
         }
@@ -790,15 +790,15 @@ public class Parser{
 
     }
 
-    public static void main(String[] args)throws Exception{
-        Scanner input = new Scanner(System.in);
-        System.out.println("Enter filename");
-        String filen = input.next();
-        Parser p = new Parser(filen);
-        p.tok = p.scanner.nextToken(); //p.scope??
-        p.parse();
-        p.writeSymbolTable();
-        p.quads.writeQuadsTable();
-        input.close();
-    }
+    // public static void main(String[] args)throws Exception{
+    //     Scanner input = new Scanner(System.in);
+    //     System.out.println("Enter filename");
+    //     String filen = input.next();
+    //     Parser p = new Parser(filen);
+    //     p.tok = p.scanner.nextToken(); //p.scope??
+    //     p.parse();
+    //     p.writeSymbolTable();
+    //     p.quads.writeQuadsTable();
+    //     input.close();
+    // }
 }

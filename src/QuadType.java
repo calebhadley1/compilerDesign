@@ -14,4 +14,8 @@ public class QuadType {
         this.arg2=arg2;
         this.result=result;
     }
+
+    public void printQuad(){
+        System.out.println(op + " " + arg1 + " " + arg2 + " " + result);
+    }
 }

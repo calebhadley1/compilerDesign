@@ -1,24 +1,20 @@
-1  program Hanoi;
-2   var n, start, goal, extra:integer;
-3   procedure move( n, start, goal, extra : integer);
-4   var w:integer;
+1  program nothing;
+2   var x, y :integer;
+3   procedure W(x,y:integer);
+4   var a,b,c: integer;
 5   begin
-6     if n >0 then
-7     begin
-8         call move(n-1, start, extra, goal);
-9         write(start); write( ' --> ' ); write(goal); writeln(' ');
-10        call move(n-1, extra, goal, start);
-11       end;
-12    end;
-13    
-14   begin
-15      write('Enter number of disks' );
-16      read (n);
-17      write('Enter start' );
-18      read(start) ;
-19      write('Enter goal' );
-20      read(goal);
-21      write('Enter the extra' );
-22      read(extra);
-23      call move(n, start, goal, extra);
-24  end.
+6   if (x = 1) then
+7   c := x + y
+8   else
+9   begin
+10   a := 5; 
+11   b := 6;
+12   c :=  a*b+x*y;
+13   end;
+14   write(c);
+15  end;
+16  begin
+17   write('Enter two integers ');
+18   read(x);  read (y);
+19   call W(x,y);
+20  end.

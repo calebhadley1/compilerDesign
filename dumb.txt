@@ -1,0 +1,21 @@
+program junk;
+var a,b : integer;
+
+procedure dumb(x,y : integer);
+var a : integer;
+begin 
+  if x < y then
+    a:=0
+  else
+  begin
+    a:=(x+y)
+  end;
+  write(a);
+end;
+
+begin
+  read(a);
+  read(b);
+  call dumb(a,b);
+  write('all done');
+end.
