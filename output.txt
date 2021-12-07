@@ -1,20 +1,20 @@
-1  program nothing;
-2   var x, y :integer;
-3   procedure W(x,y:integer);
-4   var a,b,c: integer;
-5   begin
-6   if (x = 1) then
-7   c := x + y
-8   else
-9   begin
-10   a := 5; 
-11   b := 6;
-12   c :=  a*b+x*y;
-13   end;
-14   write(c);
-15  end;
-16  begin
-17   write('Enter two integers ');
-18   read(x);  read (y);
-19   call W(x,y);
-20  end.
+1  program Binary;
+2   var x: integer;
+3   
+4   procedure convert( x: integer);
+5   var a: integer;
+6   begin
+7     if x <> 0 then
+8     begin
+9       a := x%2;
+10       x := x/2;
+11       call convert(x);
+12       write(a);
+13     end;
+14   end;
+15   
+16  begin 
+17     write('Enter a decimal number ');
+18     read(x);
+19     call convert(x);
+20   end.
