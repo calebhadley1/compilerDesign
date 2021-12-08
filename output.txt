@@ -1,20 +1,24 @@
-1  program Binary;
-2   var x: integer;
-3   
-4   procedure convert( x: integer);
-5   var a: integer;
-6   begin
-7     if x <> 0 then
-8     begin
-9       a := x%2;
-10       x := x/2;
-11       call convert(x);
-12       write(a);
-13     end;
-14   end;
-15   
-16  begin 
-17     write('Enter a decimal number ');
-18     read(x);
-19     call convert(x);
-20   end.
+1  program Hanoi;
+2   var n, start, goal, extra:integer;
+3   procedure move( n, start, goal, extra : integer);
+4   var w:integer;
+5   begin
+6     if n >0 then
+7     begin
+8         call move(n-1, start, extra, goal);
+9         write(start); write( ' --> ' ); write(goal); writeln(' ');
+10        call move(n-1, extra, goal, start);
+11       end;
+12    end;
+13    
+14   begin
+15      write('Enter number of disks' );
+16      read (n);
+17      write('Enter start' );
+18      read(start) ;
+19      write('Enter goal' );
+20      read(goal);
+21      write('Enter the extra' );
+22      read(extra);
+23      call move(n, start, goal, extra);
+24  end.

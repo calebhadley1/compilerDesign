@@ -17,8 +17,8 @@ public class Interpreter {
         public String[] memoryNotes;
 
         public Memory(){
-            memoryData = new int[17];
-            memoryNotes = new String[17];
+            memoryData = new int[90];
+            memoryNotes = new String[90];
         }
 
         public void printMemory(){
@@ -31,8 +31,8 @@ public class Interpreter {
     public Interpreter(Parser p){
         input = new Scanner(System.in);
         memory = new Memory();
-        top = 17;
-        sp = 17;
+        top = 90;
+        sp = 90;
         pc = 0;
         this.p = p;
     }
@@ -42,7 +42,7 @@ public class Interpreter {
         System.out.println("Running Interpreter:");
         QuadType q = p.quads.quads[pc];
         while(!q.arg1.equals("END")){ //Run until we hit END quad
-            q.printQuad();
+            //q.printQuad();
             if(q.op.equals("ADD")){
                 handleAdd(q);
             }
@@ -115,10 +115,10 @@ public class Interpreter {
             else if(q.op.equals("WRITELN")){
                 handleWriteln(q);
             }
-            System.out.println("PC"+pc);
-            System.out.println("SP"+sp);
-            System.out.println("TOP"+top);
-            memory.printMemory();
+            // System.out.println("PC"+pc);
+            // System.out.println("SP"+sp);
+            // System.out.println("TOP"+top);
+            // memory.printMemory();
             q = p.quads.quads[pc];
         }
     }
@@ -185,6 +185,7 @@ public class Interpreter {
         }
         else{//T.PARM
             int T=0;
+            argcount = memory.memoryData[sp+3];
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
             String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
             //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
@@ -195,7 +196,17 @@ public class Interpreter {
 
     public void handleArgument(QuadType q){
         String name = p.symT.symbols[Integer.parseInt(q.result)].name;
-        int address = sp-p.symT.symbols[Integer.parseInt(q.result)].offset;
+        //int address = sp-p.symT.symbols[Integer.parseInt(q.result)].offset;
+        int address = 0;
+        if(p.symT.symbols[Integer.parseInt(q.result)].kind==T.TEMP){ //temp symT address
+            address=sp-p.symT.symbols[Integer.parseInt(q.result)].offset;
+        }
+        else if(p.symT.symbols[Integer.parseInt(q.result)].kind==T.LOCAL){//non temp symT address
+            address=sp-p.symT.symbols[Integer.parseInt(q.result)].offset;        }
+        else{//T.PARM
+            int argcount = memory.memoryData[sp+3];
+            address = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
+        }
         int val = memory.memoryData[address];
         top--;
         memory.memoryData[top]=val;
@@ -454,6 +465,7 @@ public class Interpreter {
         }
         else{//T.PARM
             int T=0;
+            argcount = memory.memoryData[sp+3];
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
             String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
             //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;

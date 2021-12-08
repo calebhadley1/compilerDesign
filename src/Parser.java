@@ -612,6 +612,7 @@ public class Parser{
         }
         else{
             quads.insertQuad("CALL", start+"", parameterCount+"", "-");
+            //quads.insertQuad("EXIT", "-", "-", "-");
         }
     }
 
