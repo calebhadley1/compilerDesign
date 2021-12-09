@@ -1179,8 +1179,10 @@ public class Interpreter {
         p.parse();
         p.writeSymbolTable();
         p.quads.writeQuadsTable();
-        Interpreter interp = new Interpreter(p);
-        interp.runInterpreter();
-        input.close();
+        if(p.scanner.error.equals("")){
+            Interpreter interp = new Interpreter(p);
+            interp.runInterpreter();
+            input.close();
+        }
     }
 }
