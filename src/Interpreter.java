@@ -187,8 +187,6 @@ public class Interpreter {
             int T=0;
             argcount = memory.memoryData[sp+3];
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
-            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             memory.memoryData[T]=result;
         }
         pc++;
@@ -222,8 +220,6 @@ public class Interpreter {
         int offset=0;
         int argcount=0;
         int R=0;
-        int offset2=0;
-        int S=0;
         if(arg1NumFlag==false){
             offset = p.symT.symbols[Integer.parseInt(q.arg1)].offset;
             if(p.symT.symbols[Integer.parseInt(q.arg1)].kind==T.LOCAL || p.symT.symbols[Integer.parseInt(q.arg1)].kind==T.TEMP)
@@ -258,8 +254,6 @@ public class Interpreter {
             int T=0;
             argcount = memory.memoryData[sp+3];
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
-            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             memory.memoryData[T]=result;
         }
         pc++;
@@ -382,8 +376,6 @@ public class Interpreter {
         else{//T.PARM
             int T=0;
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
-            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             memory.memoryData[T]=result;
         }
         pc++;
@@ -467,8 +459,6 @@ public class Interpreter {
             int T=0;
             argcount = memory.memoryData[sp+3];
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
-            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             if(result)
                 memory.memoryData[T]=1;
             else
@@ -578,8 +568,6 @@ public class Interpreter {
             int T=0;
             argcount = memory.memoryData[sp+3];
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
-            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             if(result)
                 memory.memoryData[T]=1;
             else
@@ -658,8 +646,6 @@ public class Interpreter {
             int T=0;
             argcount = memory.memoryData[sp+3];
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
-            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             if(result)
                 memory.memoryData[T]=1;
             else
@@ -739,8 +725,6 @@ public class Interpreter {
             int T=0;
             argcount = memory.memoryData[sp+3];
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
-            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             if(result)
                 memory.memoryData[T]=1;
             else
@@ -820,8 +804,6 @@ public class Interpreter {
             int T=0;
             argcount = memory.memoryData[sp+3];
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
-            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             if(result)
                 memory.memoryData[T]=1;
             else
@@ -893,8 +875,6 @@ public class Interpreter {
         else{//T.PARM
             int T=0;
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
-            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             memory.memoryData[T]=result;
         }
         pc++;
@@ -963,8 +943,6 @@ public class Interpreter {
         else{//T.PARM
             int T=0;
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
-            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             memory.memoryData[T]=result;
         }
         pc++;
@@ -1041,8 +1019,6 @@ public class Interpreter {
             int T=0;
             argcount = memory.memoryData[sp+3];
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
-            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             if(result)
                 memory.memoryData[T]=1;
             else
@@ -1123,8 +1099,6 @@ public class Interpreter {
         else{//T.PARM
             int T=0;
             T = sp + 3 + argcount - p.symT.symbols[Integer.parseInt(q.result)].offset + 1;
-            String nameSubStr = p.symT.symbols[Integer.parseInt(q.result)].name;
-            //memory.memoryNotes[T]="Storage for parmeter @"+nameSubStr;
             memory.memoryData[T]=result;
         }
         pc++;
