@@ -1,4 +1,4 @@
-# compilerDesign
+# Baby-Pascal Compiler and Interpreter
 
 This repo contains the full code to Caleb, Derek, and Jimmy's Compiler and Interpreter.
 
